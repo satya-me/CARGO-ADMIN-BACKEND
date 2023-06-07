@@ -30,7 +30,7 @@ const CreateToken = async (id) => {
 
 
 // admin register
-const registerAdmin = async (req, res) => {
+exports.registerAdmin = async (req, res) => {
     // console.log(req.body);
     // return;
     const setPassword = await SecurePassword(req.body.password);
@@ -55,7 +55,7 @@ const registerAdmin = async (req, res) => {
 
 
 // Admin login
-const loginAdmin = async (req, res) => {
+exports.loginAdmin = async (req, res) => {
     // console.log(req.body);
     // return;
     try {
@@ -81,13 +81,4 @@ const loginAdmin = async (req, res) => {
     } catch (err) {
         return res.status(400).json(err.message)
     }
-}
-
-
-
-module.exports = {
-    SecurePassword,
-    CreateToken,
-    registerAdmin,
-    loginAdmin
 }
