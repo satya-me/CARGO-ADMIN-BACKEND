@@ -6,6 +6,8 @@ const cookie = require('cookie');
 const http = require('http');
 const crypto = require('crypto');
 const nodeMailer = require('nodemailer');
+const express = require('express');
+const app = express();
 
 
 
@@ -77,17 +79,18 @@ exports.loginAdmin = async (req, res) => {
         if (existingAdmin && (bcryptjs.compareSync(password, existingAdmin.password))) {
             const tokenData = await CreateToken(existingAdmin._id);
             // if (isRemember) {
-            //     const server = http.createServer((req, res) => {
-            //         // Set the cookie
-            //         res.setHeader('Set-Cookie', cookie.serialize('username', username));;
-            //         res.setHeader('Set-Cookie', cookie.serialize('password', password));;
+            //     const user_creds = { username, password }
+            //     app.get('/set-cookie', (req, res) => {
+            //         console.log(user_creds);
+            //         // Set the cookie with the desired name, value, and options
+            //         res.cookie('user_creds', user_creds, {
+            //             maxAge: 86400000, // Cookie expiry time in milliseconds (1 day in this example)
+            //             httpOnly: false, // The cookie is inaccessible to JavaScript
+            //             secure: false, // The cookie is sent only over HTTPS if enabled
+            //             // sameSite: 'strict' // The cookie is sent only for same-site requests
+            //         });
 
-            //         // Send response
-            //         res.end('Cookie has been set');
-            //     });
-
-            //     server.listen(3304, () => {
-            //         console.log('Server is running on port 3304');
+            //         res.send('Cookie set successfully!');
             //     });
             // }
             return res.status(200).json({ success: true, message: "Login Successfully", data: ADMINDATA, token: tokenData });

@@ -1,7 +1,7 @@
 const express = require('express');
 // const path = require('path');
 const session = require('express-session');
-// const cookieParser = require('cookie-parser');
+const cookieParser = require('cookie-parser');
 const bodyParser = require('body-parser');
 const mongoose = require('mongoose');
 const cors = require('cors');
@@ -17,10 +17,12 @@ app.use(session({
     saveUninitialized: false
 }));
 
+// cookieParser
+app.use(cookieParser());
 
 // bodyParser
-app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
+app.use(bodyParser.json());
 
 
 // cros
@@ -30,6 +32,10 @@ app.use(cors());
 // adminRoute
 const adminRoute = require('./routes/adminRoute');
 app.use('/api', adminRoute);
+
+// airlineRoute
+const airlineRoute = require('./routes/airlineRoute');
+app.use('/api/system', airlineRoute);
 
 
 // // Define a route for setting the cookie
