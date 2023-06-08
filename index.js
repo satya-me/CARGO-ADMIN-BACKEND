@@ -32,6 +32,18 @@ const adminRoute = require('./routes/adminRoute');
 app.use('/api', adminRoute);
 
 
+// // Define a route for setting the cookie
+// app.get('/set-cookie', (req, res) => {
+//     // Set the cookie using the `res.cookie()` method
+//     res.cookie('cookieName', 'cookieValue', {
+//         maxAge: 24 * 60 * 60 * 1000, // Cookie expiration time (in milliseconds)
+//         httpOnly: true, // Restrict cookie access to HTTP(S) requests
+//     });
+
+//     res.send('Cookie set successfully!');
+// });
+
+
 // dotenv config
 require('dotenv').config();
 

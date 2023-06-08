@@ -2,8 +2,10 @@ const AdminModel = require('../model/admin');
 const jwt = require('jsonwebtoken');
 const bcryptjs = require('bcryptjs');
 const config = require('../config/config');
-// const crypto = require('crypto');
-// const nodeMailer = require('nodemailer');
+const cookie = require('cookie');
+const http = require('http');
+const crypto = require('crypto');
+const nodeMailer = require('nodemailer');
 
 
 
@@ -59,7 +61,7 @@ exports.loginAdmin = async (req, res) => {
     // console.log(req.body);
     // return;
     try {
-        const { username, password } = req.body;
+        const { username, password, isRemember } = req.body;
         if (!(username && password)) {
             return res.status(400).json({ success: false, message: "Invalid username or password. Please try again" });
         }
@@ -74,7 +76,21 @@ exports.loginAdmin = async (req, res) => {
         };
         if (existingAdmin && (bcryptjs.compareSync(password, existingAdmin.password))) {
             const tokenData = await CreateToken(existingAdmin._id);
-            return res.status(200).json({ success: true, message: "Login successfully", data: ADMINDATA, token: tokenData });
+            // if (isRemember) {
+            //     const server = http.createServer((req, res) => {
+            //         // Set the cookie
+            //         res.setHeader('Set-Cookie', cookie.serialize('username', username));;
+            //         res.setHeader('Set-Cookie', cookie.serialize('password', password));;
+
+            //         // Send response
+            //         res.end('Cookie has been set');
+            //     });
+
+            //     server.listen(3304, () => {
+            //         console.log('Server is running on port 3304');
+            //     });
+            // }
+            return res.status(200).json({ success: true, message: "Login Successfully", data: ADMINDATA, token: tokenData });
         } else {
             return res.status(404).json({ success: false, message: "Invalid username or password. Please try again" })
         }
