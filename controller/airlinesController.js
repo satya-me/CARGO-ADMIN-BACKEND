@@ -68,14 +68,19 @@ exports.updateAirline = async (req, res) => {
 
 exports.deleteAirline = async (req, res) => {
     try {
-        const deleteAirline = await AirlineModel.findByIdAndUpdate(
-            req.params.id,
-            { isDeleted: true }
-        );
-        if (!deleteAirline) {
+        const airline = await AirlineModel.findById(req.params.id);
+        if (!airline) {
             return res.status(404).json({ success: false, message: "Data Not Found" });
         } else {
-            return res.status(200).json({ success: true, message: "Data Deleted Successfully" });
+            const deleteAirline = await AirlineModel.findByIdAndUpdate(
+                req.params.id,
+                { isDeleted: true }
+            );
+            if (!deleteAirline) {
+                return res.status(404).json({ success: false, message: "Data Not Found" });
+            } else {
+                return res.status(200).json({ success: true, message: "Data Deleted Successfully" });
+            }
         }
     } catch (exc) {
         return res.status(500).json({ success: false, message: "Internal Server Error" });
