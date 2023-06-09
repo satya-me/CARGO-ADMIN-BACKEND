@@ -13,7 +13,7 @@ exports.addAirline = async (req, res) => {
         console.log("airlineController line 10===>", newAirline);
         return res.status(201).json({ success: true, message: "Data Added Successfully" })
     } catch (exc) {
-        return res.status(404).json({ success: false, message: "Data Not Found" });
+        return res.status(500).json({ success: false, message: "Internal Server Error" });
     }
 }
 
@@ -27,5 +27,57 @@ exports.allAirline = async (req, res) => {
         return res.status(200).json({ success: true, message: "Data Fetched Successfully", data: allAirlines });
     } catch (exc) {
         return res.status(404).json({ success: false, message: "Data Not Found" });
+    }
+}
+
+
+// update airlines
+exports.updateAirline = async (req, res) => {
+    try {
+        const { person_name, person_designation, email, phone, role, status } = req.body;
+
+        // Check for duplicate email or phone number
+        const duplicateData = await AirlineModel.findOne({
+            $or: [
+                { email: email },
+                { phone: phone }
+            ],
+            _id: { $ne: req.params.id } // Exclude the current document being updated
+        });
+
+        if (duplicateData) {
+            return res.status(400).json({ success: false, message: "Duplicate Email or Phone Number" });
+        }
+
+        const updateAirline = await AirlineModel.findByIdAndUpdate(
+            req.params.id,
+            { person_name, person_designation, email, phone, role, status },
+            { useFindAndModify: false }
+        );
+
+        if (!updateAirline) {
+            return res.status(404).json({ success: false, message: "Data Not Found" });
+        } else {
+            return res.status(200).json({ success: true, message: "Data Updated Successfully" });
+        }
+    } catch (exc) {
+        return res.status(500).json({ success: false, message: "Internal Server Error" });
+    }
+}
+
+
+exports.deleteAirline = async (req, res) => {
+    try {
+        const deleteAirline = await AirlineModel.findByIdAndUpdate(
+            req.params.id,
+            { isDeleted: true }
+        );
+        if (!deleteAirline) {
+            return res.status(404).json({ success: false, message: "Data Not Found" });
+        } else {
+            return res.status(200).json({ success: true, message: "Data Deleted Successfully" });
+        }
+    } catch (exc) {
+        return res.status(500).json({ success: false, message: "Internal Server Error" });
     }
 }
