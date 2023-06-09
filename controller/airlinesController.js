@@ -66,6 +66,7 @@ exports.updateAirline = async (req, res) => {
 }
 
 
+// delete air line (soft delete)
 exports.deleteAirline = async (req, res) => {
     try {
         const airline = await AirlineModel.findById(req.params.id);
