@@ -73,3 +73,16 @@ exports.loginAdmin = async (req, res) => {
         return res.status(400).json(err.message)
     }
 }
+
+
+// get all admin
+exports.getAllAdmins = async (req, res) => {
+    // console.log(req.body);
+    // return;
+    try {
+        const allAdmins = await AdminModel.find({}, { password: 0 });
+        return res.status(200).json({ success: true, message: "Data Fetched Successfully", data: allAdmins });
+    } catch (exc) {
+        return res.status(404).json({ success: false, message: "Data Not Found" });
+    }
+}
