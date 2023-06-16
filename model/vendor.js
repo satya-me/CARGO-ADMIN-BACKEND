@@ -16,11 +16,11 @@ const vendorSchema = new Schema({
     },
     reporting_person_phone: {
         type: String,
-        default: true
+        require: true
     },
     password: {
         type: String,
-        default: true
+        require: true
     },
     status: {
         type: String,

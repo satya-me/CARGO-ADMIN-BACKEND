@@ -12,7 +12,7 @@ router.post('/update/airline/:id', airlineController.updateAirline);
 router.post('/delete/airline/:id', airlineController.deleteAirline);
 
 
-// ************* POST ROUTES ************* //
+// ************* GET ROUTES ************* //
 router.get('/all/airline', airlineController.allAirline);
 
 

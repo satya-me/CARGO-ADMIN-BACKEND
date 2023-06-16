@@ -3,7 +3,7 @@ const CreateToken = require('../config/createToken');
 const SecurePassword = require('../config/securePassword');
 
 
-// admin register
+// vendor register
 exports.VendorRegistration = async (req, res) => {
     // console.log(req.body);
     // return;
@@ -31,5 +31,18 @@ exports.VendorRegistration = async (req, res) => {
         }
     } catch (err) {
         return res.status(400).json(err.message);
+    }
+}
+
+
+// get all vendors
+exports.getAllVendors = async (req, res) => {
+    // console.log(req.body);
+    // return;
+    try {
+        const allVendors = await VendorModel.find();
+        return res.status(200).json({ success: true, message: "Data Fetched Successfully", data: allVendors });
+    } catch (exc) {
+        return res.status(404).json({ success: false, message: "Data Not Found" });
     }
 }
