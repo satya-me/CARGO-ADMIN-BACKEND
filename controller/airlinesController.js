@@ -54,6 +54,9 @@ exports.updateAirline = async (req, res) => {
             _id: { $ne: req.params.id } // Exclude the current document being updated
         });
 
+        // console.log(duplicateData);
+        // return;
+
         if (duplicateData) {
             return res.status(400).json({ success: false, message: "Duplicate Email or Phone Number" });
         }

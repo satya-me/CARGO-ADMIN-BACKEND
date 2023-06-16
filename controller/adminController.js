@@ -86,3 +86,62 @@ exports.getAllAdmins = async (req, res) => {
         return res.status(404).json({ success: false, message: "Data Not Found" });
     }
 }
+
+
+// update airlines
+exports.updateAdmin = async (req, res) => {
+    const { full_name, username, email, phone, role, status } = req.body;
+    try {
+        // Check for duplicate email or phone number
+        const duplicateData = await AdminModel.findOne({
+            $or: [
+                { email: email },
+                { phone: phone }
+            ],
+            _id: { $ne: req.params.id } // Exclude the current document being updated
+        });
+
+        if (duplicateData) {
+            return res.status(400).json({ success: false, message: "Duplicate Email or Phone Number" });
+        }
+
+        const updateAdmin = await AdminModel.findByIdAndUpdate(
+            req.params.id,
+            { full_name, username, email, phone, role, status },
+            { useFindAndModify: false }
+        );
+
+        if (!updateAdmin) {
+            return res.status(404).json({ success: false, message: "Data Not Found" });
+        } else {
+            // const UPDATED_ADMIN_DATA = await AdminModel.findById(req.params.id, { password: 0 });
+            return res.status(200).json({ success: true, message: "Data Updated Successfully" });
+        }
+    } catch (exc) {
+        return res.status(500).json({ success: false, message: "Internal Server Error" });
+    }
+}
+
+
+// delete air line (soft delete)
+exports.deleteAdmin = async (req, res) => {
+    try {
+        const admin = await AdminModel.findById(req.params.id);
+        if (!admin) {
+            return res.status(404).json({ success: false, message: "Data Not Found" });
+        } else {
+            const deleteAdmin = await AdminModel.findByIdAndUpdate(
+                req.params.id,
+                { isDeleted: true }
+            );
+            if (!deleteAdmin) {
+                return res.status(404).json({ success: false, message: "Data Not Found" });
+            } else {
+                // const DELETED_ADMIN_DATA = await AdminModel.findById(req.params.id, { password: 0 });
+                return res.status(200).json({ success: true, message: "Data Deleted Successfully" });
+            }
+        }
+    } catch (exc) {
+        return res.status(500).json({ success: false, message: "Internal Server Error" });
+    }
+}
