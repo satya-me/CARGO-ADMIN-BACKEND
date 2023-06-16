@@ -5,13 +5,22 @@ const AirlineModel = require('../model/airline');
 exports.addAirline = async (req, res) => {
     // console.log(req.body);
     // return;
+    const { aireline, person_name, person_designation, email, phone, role, status } = req.body;
     try {
-        const { aireline, person_name, person_designation, email, phone, role, status } = req.body;
-        const newAirline = await new AirlineModel({
-            aireline, person_name, person_designation, email, phone, role, status
-        }).save();
-        console.log("airlineController line 10===>", newAirline);
-        return res.status(201).json({ success: true, message: "Data Added Successfully" })
+        if (aireline && person_name && person_designation && email && phone && role && status && req.file.filename) {
+            const newAirline = await AirlineModel({
+                aireline, person_name, person_designation, email, phone, role, status, aireline_logo: "/public/uploads/" + req.file.filename
+            });
+            const saveAirline = await newAirline.save();
+            // console.log("airlineController line 10===>", saveAirline);
+            if (saveAirline) {
+                return res.status(200).json({ success: true, message: "Data Added Successfully" });
+            } else {
+                return res.status(400).json({ success: false, message: "Something Went Wrong.Please Try Again" });
+            }
+        } else {
+            return res.status(400).json({ success: false, message: "All Fields Are Required" });
+        }
     } catch (exc) {
         return res.status(500).json({ success: false, message: "Internal Server Error" });
     }

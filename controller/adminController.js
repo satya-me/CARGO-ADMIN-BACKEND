@@ -1,36 +1,8 @@
 const AdminModel = require('../model/admin');
-const jwt = require('jsonwebtoken');
 const bcryptjs = require('bcryptjs');
-const config = require('../config/config');
-const cookie = require('cookie');
-const http = require('http');
-const crypto = require('crypto');
-const nodeMailer = require('nodemailer');
-const express = require('express');
-const app = express();
+const CreateToken = require('../config/createToken');
+const SecurePassword = require('../config/securePassword');
 
-
-
-// secure_password
-const SecurePassword = async (password) => {
-    try {
-        const HashPassword = await bcryptjs.hash(password, 10);
-        return HashPassword;
-    } catch (err) {
-        console.log(err.message);
-    }
-}
-
-
-// create token
-const CreateToken = async (id) => {
-    try {
-        const token = await jwt.sign({ _id: id }, config.secret_key, { expiresIn: "5h" });
-        return token;
-    } catch (err) {
-        console.log(err.message);
-    }
-}
 
 
 // admin register
@@ -49,7 +21,7 @@ exports.registerAdmin = async (req, res) => {
             return res.status(400).json({ success: false, message: "Username already exsist" });
         } else {
             const SaveAdmin = await NewAdmin.save();
-            await CreateToken(SaveAdmin._id);
+            await CreateToken(SaveAdmin);
             return res.status(200).json({ success: true, message: "Registered successfully" })
         }
     } catch (err) {

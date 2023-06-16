@@ -1,5 +1,6 @@
 const AirlineModel = require('../model/airline');
 const AdminModel = require('../model/admin');
+const fs = require('fs');
 
 // duplicateAdminCheck
 exports.duplicateAdminCheck = async (req, res, next) => {
@@ -27,12 +28,24 @@ exports.duplicateAdminCheck = async (req, res, next) => {
 
 // duplicateAirlineCheck
 exports.duplicateAirlineCheck = async (req, res, next) => {
+    const filePath = './public/uploads/' + req.file.filename; // Specify the path to the file
+
     try {
         const { aireline, email, phone } = req.body;
         const check_airline = await AirlineModel.findOne({ aireline });
         const check_email = await AirlineModel.findOne({ email });
         const check_phone = await AirlineModel.findOne({ phone });
 
+        // Delete the file
+        if (check_airline || check_email || check_phone) {
+            fs.unlink(filePath, (err) => {
+                if (err) {
+                    console.error("error ==>", err);
+                    return;
+                }
+                console.log('File deleted successfully After Duplicate Detection');
+            });
+        }
 
         if (check_airline) {
             return res.status(409).json({ success: false, message: `${aireline} Already Exsists.` });

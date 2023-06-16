@@ -30,6 +30,10 @@ const airlineSchema = new Schema({
         type: String,
         default: true
     },
+    aireline_logo: {
+        type: String,
+        require: true
+    }
 }, { timestamps: true })
 
 

@@ -3,7 +3,7 @@ const router = express.Router();
 const Verify = require('../middleware/Verify');
 const adminController = require('../controller/adminController')
 
-// define url route
+// ************* POST ROUTES ************* //
 router.post('/admin/auth/signup', [Verify.duplicateAdminCheck], adminController.registerAdmin);
 router.post('/admin/auth/login', adminController.loginAdmin);
 
