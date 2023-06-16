@@ -37,6 +37,10 @@ app.use('/api', adminRoute);
 const airlineRoute = require('./routes/airlineRoute');
 app.use('/api/system', airlineRoute);
 
+// vendorRoute
+const vendorRoute = require('./routes/vendorRoute');
+app.use('/api', vendorRoute);
+
 
 // // Define a route for setting the cookie
 // app.get('/set-cookie', (req, res) => {
