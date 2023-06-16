@@ -88,7 +88,6 @@ exports.updateVendor = async (req, res) => {
             return res.status(200).json({ success: true, message: "Data Updated Successfully" });
         }
     } catch (exc) {
-        console.log(exc);
         return res.status(500).json({ success: false, message: "Internal Server Error" });
     }
 }
