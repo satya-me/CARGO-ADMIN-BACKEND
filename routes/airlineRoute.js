@@ -9,7 +9,7 @@ const router = express.Router();
 
 // ************* POST ROUTES ************* //
 router.post('/add/airline', ImageUpload.single("aireline_logo"), [Verify.duplicateAirlineCheck], airlineController.addAirline);
-router.post('/update/airline/:id', [Authentication.verifyToken], airlineController.updateAirline);
+router.post('/update/airline/:id', ImageUpload.single("aireline_logo"), [Authentication.verifyToken], airlineController.updateAirline);
 router.post('/delete/airline/:id', [Authentication.verifyToken], airlineController.deleteAirline);
 
 

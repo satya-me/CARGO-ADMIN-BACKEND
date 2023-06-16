@@ -63,7 +63,14 @@ exports.updateAirline = async (req, res) => {
 
         const updateAirline = await AirlineModel.findByIdAndUpdate(
             req.params.id,
-            { person_name, person_designation, email, phone, role, status },
+            {
+                person_name,
+                person_designation,
+                email, phone,
+                role,
+                status,
+                aireline_logo: "/public/uploads/" + req.file.filename
+            },
             { useFindAndModify: false }
         );
 

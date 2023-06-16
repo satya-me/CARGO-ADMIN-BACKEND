@@ -46,3 +46,73 @@ exports.getAllVendors = async (req, res) => {
         return res.status(404).json({ success: false, message: "Data Not Found" });
     }
 }
+
+
+// update vendor
+exports.updateVendor = async (req, res) => {
+    const { vendor_name, reporting_person_name, reporting_person_email, reporting_person_phone, status } = req.body;
+    try {
+        // Check for duplicate email or phone number
+        const duplicateData = await VendorModel.findOne({
+            $or: [
+                { email: reporting_person_email },
+                { phone: reporting_person_phone }
+            ],
+            _id: { $ne: req.params.id } // Exclude the current document being updated
+        });
+
+        // console.log(duplicateData);
+        // return;
+
+        if (duplicateData) {
+            return res.status(400).json({ success: false, message: "Duplicate Email or Phone Number" });
+        }
+
+        const updateVendor = await VendorModel.findByIdAndUpdate(
+            req.params.id,
+            {
+                vendor_name,
+                reporting_person_name,
+                reporting_person_email,
+                reporting_person_phone,
+                status,
+                vendor_logo: "/public/uploads/" + req.file.filename
+            },
+            { useFindAndModify: false }
+        );
+
+        if (!updateVendor) {
+            return res.status(404).json({ success: false, message: "Data Not Found" });
+        } else {
+            // const UPDATED_ADMIN_DATA = await VendorModel.findById(req.params.id, { password: 0 });
+            return res.status(200).json({ success: true, message: "Data Updated Successfully" });
+        }
+    } catch (exc) {
+        console.log(exc);
+        return res.status(500).json({ success: false, message: "Internal Server Error" });
+    }
+}
+
+
+// delete vendor (soft delete)
+exports.deleteVendor = async (req, res) => {
+    try {
+        const vendor = await VendorModel.findById(req.params.id);
+        if (!vendor) {
+            return res.status(404).json({ success: false, message: "Data Not Found" });
+        } else {
+            const deleteVendor = await VendorModel.findByIdAndUpdate(
+                req.params.id,
+                { isDeleted: true }
+            );
+            if (!deleteVendor) {
+                return res.status(404).json({ success: false, message: "Data Not Found" });
+            } else {
+                // const DELETED_ADMIN_DATA = await VendorModel.findById(req.params.id, { password: 0 });
+                return res.status(200).json({ success: true, message: "Data Deleted Successfully" });
+            }
+        }
+    } catch (exc) {
+        return res.status(500).json({ success: false, message: "Internal Server Error" });
+    }
+}

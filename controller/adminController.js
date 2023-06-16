@@ -88,7 +88,7 @@ exports.getAllAdmins = async (req, res) => {
 }
 
 
-// update airlines
+// update admin
 exports.updateAdmin = async (req, res) => {
     const { full_name, username, email, phone, role, status } = req.body;
     try {
@@ -123,7 +123,7 @@ exports.updateAdmin = async (req, res) => {
 }
 
 
-// delete air line (soft delete)
+// delete admin (soft delete)
 exports.deleteAdmin = async (req, res) => {
     try {
         const admin = await AdminModel.findById(req.params.id);
