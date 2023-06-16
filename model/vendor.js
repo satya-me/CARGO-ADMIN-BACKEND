@@ -18,6 +18,10 @@ const vendorSchema = new Schema({
         type: String,
         default: true
     },
+    password: {
+        type: String,
+        default: true
+    },
     status: {
         type: String,
         default: true
