@@ -26,7 +26,7 @@ exports.verifyToken = (req, res, next) => {
 
         req.admin = decoded;
         next();
-        console.log("after next");
+        // console.log("after next");
     } catch (exc) {
         return res.status(401).json({ status: false, msg: "Invalid token access" });
     }
