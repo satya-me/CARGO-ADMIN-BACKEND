@@ -5,11 +5,12 @@ const AirlineModel = require('../model/airline');
 exports.addAirline = async (req, res) => {
     // console.log(req.body);
     // return;
-    const { aireline, person_name, person_designation, email, phone, role, status } = req.body;
+    const { airline, person_name, person_designation, email, phone, role, status } = req.body;
+    const img = req.file ? '/public/uploads/' + req.file.filename : "";
     try {
-        if (aireline && person_name && person_designation && email && phone && role && status && req.file.filename) {
+        if (airline && person_name && person_designation && email && phone && role && status) {
             const newAirline = await AirlineModel({
-                aireline, person_name, person_designation, email, phone, role, status, aireline_logo: "/public/uploads/" + req.file.filename
+                airline, person_name, person_designation, email, phone, role, status, airline_logo: img
             });
             const saveAirline = await newAirline.save();
             // console.log("airlineController line 10===>", saveAirline);
@@ -29,10 +30,8 @@ exports.addAirline = async (req, res) => {
 
 // all airline
 exports.allAirline = async (req, res) => {
-    // console.log(req.body);
-    // return;
     try {
-        const allAirlines = await AirlineModel.find();
+        const allAirlines = await AirlineModel.find().lean();
         return res.status(200).json({ success: true, message: "Data Fetched Successfully", data: allAirlines });
     } catch (exc) {
         return res.status(404).json({ success: false, message: "Data Not Found" });
@@ -42,9 +41,11 @@ exports.allAirline = async (req, res) => {
 
 // update airlines
 exports.updateAirline = async (req, res) => {
-    try {
-        const { person_name, person_designation, email, phone, role, status } = req.body;
 
+    const { person_name, person_designation, email, phone, role, status } = req.body;
+    const img = req.file ? '/public/uploads/' + req.file.filename : "";
+
+    try {
         // Check for duplicate email or phone number
         const duplicateData = await AirlineModel.findOne({
             $or: [
@@ -69,7 +70,7 @@ exports.updateAirline = async (req, res) => {
                 email, phone,
                 role,
                 status,
-                aireline_logo: "/public/uploads/" + req.file.filename
+                aireline_logo: img
             },
             { useFindAndModify: false }
         );

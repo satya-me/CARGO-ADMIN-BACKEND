@@ -23,12 +23,15 @@ const vendorSchema = new Schema({
         require: true
     },
     status: {
-        type: String,
+        type: Boolean,
         default: true
     },
+    isDeleted: {
+        type: Boolean,
+        default: false
+    },
     vendor_logo: {
-        type: String,
-        require: true
+        type: String
     }
 }, { timestamps: true })
 

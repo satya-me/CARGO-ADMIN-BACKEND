@@ -29,11 +29,13 @@ exports.duplicateAdminCheck = async (req, res, next) => {
 
 // duplicateAirlineCheck
 exports.duplicateAirlineCheck = async (req, res, next) => {
-    const filePath = './public/uploads/' + req.file.filename; // Specify the path to the file
+    // console.log(req.body);
+    // return;
+    const filePath = req.file ? './public/uploads/' + req.file.filename : ""; // Specify the path to the file
 
     try {
-        const { aireline, email, phone } = req.body;
-        const check_airline = await AirlineModel.findOne({ aireline });
+        const { airline, email, phone } = req.body;
+        const check_airline = await AirlineModel.findOne({ airline });
         const check_email = await AirlineModel.findOne({ email });
         const check_phone = await AirlineModel.findOne({ phone });
 
@@ -49,7 +51,7 @@ exports.duplicateAirlineCheck = async (req, res, next) => {
         }
 
         if (check_airline) {
-            return res.status(409).json({ success: false, message: `${aireline} Already Exsists.` });
+            return res.status(409).json({ success: false, message: `${airline} Already Exsists.` });
         } else if (check_email) {
             return res.status(409).json({ success: false, message: `${email} Already Exsists.` });
         } else if (check_phone) {
@@ -66,7 +68,7 @@ exports.duplicateAirlineCheck = async (req, res, next) => {
 
 // duplicateAdminCheck
 exports.duplicateVendorCheck = async (req, res, next) => {
-    const filePath = './public/uploads/' + req.file.filename; // Specify the path to the file
+    const filePath = req.file ? './public/uploads/' + req.file.filename : ""; // Specify the path to the file
 
     try {
         const { vendor_name, reporting_person_email, reporting_person_phone } = req.body;

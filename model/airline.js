@@ -2,7 +2,7 @@ const mongoose = require('mongoose');
 
 const Schema = mongoose.Schema;
 const airlineSchema = new Schema({
-    aireline: {
+    airline: {
         type: String,
         require: true
     },
@@ -28,11 +28,14 @@ const airlineSchema = new Schema({
     },
     status: {
         type: String,
-        default: true
+        require: true
+    },
+    isDeleted: {
+        type: Boolean,
+        default: false
     },
     aireline_logo: {
-        type: String,
-        require: true
+        type: String
     }
 }, { timestamps: true })
 

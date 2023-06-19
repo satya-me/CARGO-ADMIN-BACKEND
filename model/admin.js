@@ -20,16 +20,23 @@ const adminSchema = new Schema({
     },
     role: {
         type: String,
-        default: "Super Admin"
+        require: true
     },
     status: {
-        type: String,
+        type: Boolean,
         default: true
     },
     password: {
         type: String,
         require: true
     },
+    profile_img: {
+        type: String
+    },
+    isDeleted: {
+        type: Boolean,
+        default: false
+    }
 }, { timestamps: true })
 
 

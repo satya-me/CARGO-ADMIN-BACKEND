@@ -10,9 +10,9 @@ exports.registerAdmin = async (req, res) => {
     // console.log(req.body);
     // return;
     const setPassword = await SecurePassword(req.body.password);
-    const { full_name, username, email, phone } = req.body;
+    const { full_name, username, email, phone, role } = req.body;
     try {
-        const NewAdmin = new AdminModel({ full_name, username, email, phone, password: setPassword })
+        const NewAdmin = new AdminModel({ full_name, username, email, phone, role, password: setPassword })
         const adminEmail = await AdminModel.findOne({ email: req.body.email });
         const adminUsername = await AdminModel.findOne({ username: req.body.username });
         if (adminEmail) {
