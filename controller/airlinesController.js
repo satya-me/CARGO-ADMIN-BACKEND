@@ -15,7 +15,7 @@ exports.addAirline = async (req, res) => {
             const saveAirline = await newAirline.save();
             // console.log("airlineController line 10===>", saveAirline);
             if (saveAirline) {
-                return res.status(200).json({ success: true, message: "Data Added Successfully" });
+                return res.status(200).json({ success: true, message: "New Airline Added Successfully" });
             } else {
                 return res.status(400).json({ success: false, message: "Something Went Wrong.Please Try Again" });
             }
@@ -78,7 +78,7 @@ exports.updateAirline = async (req, res) => {
         if (!updateAirline) {
             return res.status(404).json({ success: false, message: "Data Not Found" });
         } else {
-            return res.status(200).json({ success: true, message: "Data Updated Successfully" });
+            return res.status(200).json({ success: true, message: "Airline Updated Successfully" });
         }
     } catch (exc) {
         return res.status(500).json({ success: false, message: "Internal Server Error" });
@@ -100,7 +100,7 @@ exports.deleteAirline = async (req, res) => {
             if (!deleteAirline) {
                 return res.status(404).json({ success: false, message: "Data Not Found" });
             } else {
-                return res.status(200).json({ success: true, message: "Data Deleted Successfully" });
+                return res.status(200).json({ success: true, message: "Airline Deleted Successfully" });
             }
         }
     } catch (exc) {

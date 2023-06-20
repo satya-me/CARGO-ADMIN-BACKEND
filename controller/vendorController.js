@@ -7,7 +7,7 @@ const SecurePassword = require('../config/securePassword');
 exports.VendorRegistration = async (req, res) => {
     // console.log(req.body);
     // return;
-    const { vendor_name, reporting_person_name, reporting_person_email, reporting_person_phone } = req.body;
+    const { vendor_name, reporting_person_name, reporting_person_email, reporting_person_phone, status } = req.body;
     const setPassword = await SecurePassword(req.body.password);
     try {
         const NewVendor = new VendorModel({
@@ -15,6 +15,7 @@ exports.VendorRegistration = async (req, res) => {
             reporting_person_name,
             reporting_person_email,
             reporting_person_phone,
+            status,
             password: setPassword,
             vendor_logo: "/public/uploads/" + req.file.filename
         })
@@ -85,7 +86,7 @@ exports.updateVendor = async (req, res) => {
             return res.status(404).json({ success: false, message: "Data Not Found" });
         } else {
             // const UPDATED_ADMIN_DATA = await VendorModel.findById(req.params.id, { password: 0 });
-            return res.status(200).json({ success: true, message: "Data Updated Successfully" });
+            return res.status(200).json({ success: true, message: "Vendor Updated Successfully" });
         }
     } catch (exc) {
         return res.status(500).json({ success: false, message: "Internal Server Error" });
@@ -108,7 +109,7 @@ exports.deleteVendor = async (req, res) => {
                 return res.status(404).json({ success: false, message: "Data Not Found" });
             } else {
                 // const DELETED_ADMIN_DATA = await VendorModel.findById(req.params.id, { password: 0 });
-                return res.status(200).json({ success: true, message: "Data Deleted Successfully" });
+                return res.status(200).json({ success: true, message: "Vendor Deleted Successfully" });
             }
         }
     } catch (exc) {

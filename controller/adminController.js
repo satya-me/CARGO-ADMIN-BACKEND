@@ -115,7 +115,7 @@ exports.updateAdmin = async (req, res) => {
             return res.status(404).json({ success: false, message: "Data Not Found" });
         } else {
             // const UPDATED_ADMIN_DATA = await AdminModel.findById(req.params.id, { password: 0 });
-            return res.status(200).json({ success: true, message: "Data Updated Successfully" });
+            return res.status(200).json({ success: true, message: "User Updated Successfully" });
         }
     } catch (exc) {
         return res.status(500).json({ success: false, message: "Internal Server Error" });
@@ -138,7 +138,7 @@ exports.deleteAdmin = async (req, res) => {
                 return res.status(404).json({ success: false, message: "Data Not Found" });
             } else {
                 // const DELETED_ADMIN_DATA = await AdminModel.findById(req.params.id, { password: 0 });
-                return res.status(200).json({ success: true, message: "Data Deleted Successfully" });
+                return res.status(200).json({ success: true, message: "User Deleted Successfully" });
             }
         }
     } catch (exc) {
