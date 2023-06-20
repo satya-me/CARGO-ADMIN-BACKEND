@@ -23,8 +23,8 @@ const vendorSchema = new Schema({
         require: true
     },
     status: {
-        type: Boolean,
-        default: true
+        type: String,
+        require: true
     },
     isDeleted: {
         type: Boolean,

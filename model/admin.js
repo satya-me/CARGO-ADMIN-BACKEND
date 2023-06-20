@@ -23,8 +23,8 @@ const adminSchema = new Schema({
         require: true
     },
     status: {
-        type: Boolean,
-        default: true
+        type: String,
+        require: true
     },
     password: {
         type: String,
