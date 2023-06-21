@@ -2,7 +2,8 @@ const AdminModel = require('../model/admin');
 const bcryptjs = require('bcryptjs');
 const CreateToken = require('../config/createToken');
 const SecurePassword = require('../config/securePassword');
-
+const jwt = require('jsonwebtoken');
+const { secret_key } = require('../config/secretKay');
 
 
 // admin register
@@ -34,8 +35,8 @@ exports.registerAdmin = async (req, res) => {
 exports.loginAdmin = async (req, res) => {
     // console.log(req.body);
     // return;
+    const { username, password, isRemember } = req.body;
     try {
-        const { username, password, isRemember } = req.body;
         if (!(username && password)) {
             return res.status(400).json({ success: false, message: "Invalid username or password. Please try again" });
         }
@@ -50,21 +51,19 @@ exports.loginAdmin = async (req, res) => {
         };
         if (existingAdmin && (bcryptjs.compareSync(password, existingAdmin.password))) {
             const tokenData = await CreateToken(existingAdmin._id);
-            // if (isRemember) {
-            //     const user_creds = { username, password }
-            //     app.get('/set-cookie', (req, res) => {
-            //         console.log(user_creds);
-            //         // Set the cookie with the desired name, value, and options
-            //         res.cookie('user_creds', user_creds, {
-            //             maxAge: 86400000, // Cookie expiry time in milliseconds (1 day in this example)
-            //             httpOnly: false, // The cookie is inaccessible to JavaScript
-            //             secure: false, // The cookie is sent only over HTTPS if enabled
-            //             // sameSite: 'strict' // The cookie is sent only for same-site requests
-            //         });
+            if (isRemember) {
+                const token = jwt.sign({ id: existingAdmin._id }, secret_key, {
+                    expiresIn: '7d', // Set the token expiration time (e.g., 7 days)
+                });
 
-            //         res.send('Cookie set successfully!');
-            //     });
-            // }
+                const cookie = res.cookie('token', token, {
+                    maxAge: 7 * 24 * 60 * 60 * 1000, // Cookie expiry time in milliseconds (7 days)
+                    httpOnly: true, // The cookie is inaccessible to JavaScript
+                    secure: false, // The cookie is sent only over HTTPS if enabled
+                    // sameSite: 'strict' // The cookie is sent only for same-site requests
+                });
+                // console.log(cookie);
+            }
             return res.status(200).json({ success: true, message: "Login Successfully", data: ADMINDATA, token: tokenData });
         } else {
             return res.status(404).json({ success: false, message: "Invalid username or password. Please try again" })
