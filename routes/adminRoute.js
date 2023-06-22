@@ -15,6 +15,7 @@ router.post('/admin/auth/setpassword/:email/:token', ImageUpload.single("profile
 
 // ************* GET ROUTES ************* //
 router.get('/all/admin', adminController.getAllAdmins);
+router.get('/admin/auth/setpassword/:email/:token', adminController.setAdminPasswordView);
 
 
 module.exports = router;

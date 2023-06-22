@@ -24,6 +24,9 @@ app.use(cookieParser());
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(bodyParser.json());
 
+// views
+app.set("view engine", "ejs");
+app.set("views", "views");
 
 // cros
 app.use(cors());
@@ -40,18 +43,6 @@ app.use('/api/system', airlineRoute);
 // vendorRoute
 const vendorRoute = require('./routes/vendorRoute');
 app.use('/api', vendorRoute);
-
-
-// // Define a route for setting the cookie
-// app.get('/set-cookie', (req, res) => {
-//     // Set the cookie using the `res.cookie()` method
-//     res.cookie('cookieName', 'cookieValue', {
-//         maxAge: 24 * 60 * 60 * 1000, // Cookie expiration time (in milliseconds)
-//         httpOnly: true, // Restrict cookie access to HTTP(S) requests
-//     });
-
-//     res.send('Cookie set successfully!');
-// });
 
 
 // dotenv config

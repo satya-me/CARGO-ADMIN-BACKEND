@@ -242,3 +242,13 @@ exports.deleteAdmin = async (req, res) => {
         return res.status(500).json({ success: false, message: "Internal Server Error" });
     }
 }
+
+
+// set admin password VIEW
+exports.setAdminPasswordView = (req, res) => {
+    // console.log(req.params);
+    res.render("createpassword", {
+        title: "createpassword",
+        data: req.params
+    })
+};
