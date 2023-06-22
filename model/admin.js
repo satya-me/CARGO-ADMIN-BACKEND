@@ -28,7 +28,7 @@ const adminSchema = new Schema({
     },
     password: {
         type: String,
-        require: true
+        // require: true
     },
     profile_img: {
         type: String
@@ -36,7 +36,11 @@ const adminSchema = new Schema({
     isDeleted: {
         type: Boolean,
         default: false
-    }
+    },
+    admin_type: {
+        type: String,
+        dafault: "admin"
+    },
 }, { timestamps: true })
 
 

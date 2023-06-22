@@ -4,31 +4,120 @@ const CreateToken = require('../config/createToken');
 const SecurePassword = require('../config/securePassword');
 const jwt = require('jsonwebtoken');
 const { secret_key } = require('../config/secretKay');
+const TokenModel = require('../model/token');
+const nodemailer = require('nodemailer');
+const crypto = require('crypto');
+
+
 
 
 // admin register
 exports.registerAdmin = async (req, res) => {
-    // console.log(req.body);
-    // return;
-    const setPassword = await SecurePassword(req.body.password);
     const { full_name, username, email, phone, role } = req.body;
     try {
-        const NewAdmin = new AdminModel({ full_name, username, email, phone, role, password: setPassword })
-        const adminEmail = await AdminModel.findOne({ email: req.body.email });
-        const adminUsername = await AdminModel.findOne({ username: req.body.username });
+        const adminEmail = await AdminModel.findOne({ email });
+        const adminUsername = await AdminModel.findOne({ username });
+
         if (adminEmail) {
-            return res.status(400).json({ success: false, message: "Email already exsist" });
+            return res.status(400).json({ success: false, message: "Email already exists" });
         } else if (adminUsername) {
-            return res.status(400).json({ success: false, message: "Username already exsist" });
+            return res.status(400).json({ success: false, message: "Username already exists" });
         } else {
-            const SaveAdmin = await NewAdmin.save();
-            await CreateToken(SaveAdmin);
-            return res.status(200).json({ success: true, message: "Registered successfully" })
+            const NewAdmin = new AdminModel({
+                full_name,
+                username,
+                email,
+                phone,
+                role,
+                password: "",
+            });
+
+            const user = await NewAdmin.save();
+
+            const token = new TokenModel({
+                _userId: user._id,
+                token: crypto.randomBytes(16).toString("hex"),
+            });
+
+            await token.save();
+
+            var transporter = nodemailer.createTransport({
+                host: "smtp.gmail.com",
+                port: 587,
+                secure: false,
+                requireTLS: true,
+                auth: {
+                    user: process.env.EMAIL_ID,
+                    pass: process.env.APP_PASSWORD
+                },
+            });
+
+            var mailOptions = {
+                from: "no-reply@surajit.com",
+                to: user.email,
+                subject: "Set Password Link",
+                text:
+                    "Hello " +
+                    full_name +
+                    ",\n\n" +
+                    "Please set your password by clicking the link: \nhttp:\/\/" +
+                    req.headers.host +
+                    "\/api\/admin\/auth\/setpassword\/" +
+                    email +
+                    "\/" +
+                    token.token +
+                    "\n\nThank You!!\n",
+            };
+            transporter.sendMail(mailOptions, function (err) {
+                if (err) {
+                    console.log("Technical Issues...");
+                    return res.status(400).json({ success: false, message: "Technical Issues" });
+                } else {
+                    console.log("Mail Sent.....");
+                    return res.status(200).json({
+                        success: true,
+                        message:
+                            "An Email Sent To Your Email ID For Set Your Password. It Will Expire Within 24 Hours.",
+                    });
+                }
+            });
         }
     } catch (err) {
-        return res.status(400).json(err.message);
+        console.log("Error:", err);
+        return res.status(500).json({ success: false, message: "Internal Server Error" });
     }
-}
+};
+
+
+// set admin password
+exports.setAdminPassword = async (req, res) => {
+    const { email, token } = req.params;
+    const setPassword = await SecurePassword(req.body.password);
+    try {
+        const adminToken = await TokenModel.findOne({ token: token });
+
+        if (!adminToken) {
+            console.log("Verification Link May Be Expired :(");
+            return res.status(400).json({ success: false, message: "Verification Link May Be Expired :(" });
+        } else {
+            const ADMIN = await AdminModel.findOne({ _id: adminToken._userId, email });
+
+            if (!ADMIN) {
+                console.log("User Not found");
+            } else if (ADMIN.password) {
+                console.log("Password Already Set for the User");
+                return res.status(400).json({ success: false, message: "Password Already Set for the User" });
+            } else {
+                ADMIN.password = setPassword; // Update the password field in the ADMIN object
+                await ADMIN.save();
+                await CreateToken(ADMIN);
+                return res.status(200).json({ success: true, message: "Password Set Successfully" });
+            }
+        }
+    } catch (err) {
+        return res.status(500).json({ success: false, message: "Internal Server Error" });
+    }
+};
 
 
 // Admin login
@@ -52,16 +141,18 @@ exports.loginAdmin = async (req, res) => {
         if (existingAdmin && (bcryptjs.compareSync(password, existingAdmin.password))) {
             const tokenData = await CreateToken(existingAdmin._id);
             if (isRemember) {
-                const token = jwt.sign({ id: existingAdmin._id }, secret_key, {
-                    expiresIn: '7d', // Set the token expiration time (e.g., 7 days)
-                });
+                res.cookie('username', username);
+                res.cookie('password', password);
+                // const token = jwt.sign({ id: existingAdmin._id }, secret_key, {
+                //     expiresIn: '7d', // Set the token expiration time (e.g., 7 days)
+                // });
 
-                const cookie = res.cookie('token', token, {
-                    maxAge: 7 * 24 * 60 * 60 * 1000, // Cookie expiry time in milliseconds (7 days)
-                    httpOnly: true, // The cookie is inaccessible to JavaScript
-                    secure: false, // The cookie is sent only over HTTPS if enabled
-                    // sameSite: 'strict' // The cookie is sent only for same-site requests
-                });
+                // const cookie = res.cookie('token', token, {
+                //     maxAge: 7 * 24 * 60 * 60 * 1000, // Cookie expiry time in milliseconds (7 days)
+                //     httpOnly: true, // The cookie is inaccessible to JavaScript
+                //     secure: false, // The cookie is sent only over HTTPS if enabled
+                //     // sameSite: 'strict' // The cookie is sent only for same-site requests
+                // });
                 // console.log(cookie);
             }
             return res.status(200).json({ success: true, message: "Login Successfully", data: ADMINDATA, token: tokenData });
@@ -69,7 +160,7 @@ exports.loginAdmin = async (req, res) => {
             return res.status(404).json({ success: false, message: "Invalid username or password. Please try again" })
         }
     } catch (err) {
-        return res.status(400).json(err.message)
+        return res.status(500).json({ success: false, message: "Internal Server Error" });
     }
 }
 

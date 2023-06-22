@@ -1,6 +1,6 @@
 const VendorModel = require('../model/vendor');
 const CreateToken = require('../config/createToken');
-const SecurePassword = require('../config/securePassword');
+// const SecurePassword = require('../config/securePassword');
 
 
 // vendor register
@@ -8,7 +8,7 @@ exports.VendorRegistration = async (req, res) => {
     // console.log(req.body);
     // return;
     const { vendor_name, reporting_person_name, reporting_person_email, reporting_person_phone, status } = req.body;
-    const setPassword = await SecurePassword(req.body.password);
+    // const setPassword = await SecurePassword(req.body.password);
     try {
         const NewVendor = new VendorModel({
             vendor_name,
@@ -16,7 +16,7 @@ exports.VendorRegistration = async (req, res) => {
             reporting_person_email,
             reporting_person_phone,
             status,
-            password: setPassword,
+            // password: setPassword,
             vendor_logo: "/public/uploads/" + req.file.filename
         })
         const vendorEmail = await VendorModel.findOne({ reporting_person_email: req.body.reporting_person_email });

@@ -2,6 +2,10 @@ const mongoose = require('mongoose');
 
 const Schema = mongoose.Schema;
 const vendorSchema = new Schema({
+    admin_type: {
+        type: String,
+        dafault: "vendor"
+    },
     vendor_name: {
         type: String,
         require: true
@@ -26,12 +30,20 @@ const vendorSchema = new Schema({
         type: String,
         require: true
     },
+    password: {
+        type: String,
+    },
     isDeleted: {
         type: Boolean,
         default: false
     },
     vendor_logo: {
         type: String
+    },
+    _airlineId: {
+        type: Schema.Types.ObjectId,
+        ref: "airline",
+        require: true
     }
 }, { timestamps: true })
 

@@ -1,6 +1,5 @@
 const AirlineModel = require('../model/airline');
 
-
 // add airline
 exports.addAirline = async (req, res) => {
     // console.log(req.body);
@@ -10,7 +9,14 @@ exports.addAirline = async (req, res) => {
     try {
         if (airline && person_name && person_designation && email && phone && role && status) {
             const newAirline = await AirlineModel({
-                airline, person_name, person_designation, email, phone, role, status, airline_logo: img
+                airline,
+                person_name,
+                person_designation,
+                email,
+                phone,
+                role,
+                status,
+                airline_logo: img
             });
             const saveAirline = await newAirline.save();
             // console.log("airlineController line 10===>", saveAirline);
