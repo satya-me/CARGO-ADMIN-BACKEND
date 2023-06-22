@@ -13,8 +13,13 @@ const crypto = require('crypto');
 
 // admin register
 exports.registerAdmin = async (req, res) => {
-    const { full_name, username, email, phone, role } = req.body;
+    // console.log(req.body);
+    // return;
+    const { full_name, username, email, phone, role, status } = req.body;
     try {
+        if (!(full_name && username && email && phone && role && status)) {
+            return res.status(400).json({ success: false, message: "All Fields Are Required.Please try again" });
+        }
         const adminEmail = await AdminModel.findOne({ email });
         const adminUsername = await AdminModel.findOne({ username });
 
@@ -29,6 +34,7 @@ exports.registerAdmin = async (req, res) => {
                 email,
                 phone,
                 role,
+                status,
                 password: "",
                 admin_type: "admin"
             });
@@ -83,9 +89,9 @@ exports.registerAdmin = async (req, res) => {
                 }
             });
         }
-    } catch (err) {
-        console.log("Error:", err);
-        return res.status(500).json({ success: false, message: "Internal Server Error" });
+    } catch (exc) {
+        console.log("Error:", exc);
+        return res.status(404).json({ success: false, message: exc });
     }
 };
 

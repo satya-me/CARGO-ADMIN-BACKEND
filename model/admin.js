@@ -4,31 +4,31 @@ const Schema = mongoose.Schema;
 const adminSchema = new Schema({
     full_name: {
         type: String,
-        require: [true, "Full Name Is Required"]
+        require: true
     },
     username: {
         type: String,
-        require: [true, "Username Is Required"]
+        require: true
     },
     email: {
         type: String,
-        require: [true, "Email ID Is Required"]
+        require: true
     },
     phone: {
         type: String,
-        require: [true, "Phone Number Is Required"]
+        require: true
     },
     role: {
         type: String,
-        require: [true, "User Role Is Required"]
+        require: true
     },
     status: {
         type: String,
-        require: [true, "User Status Is Required"]
+        require: true
     },
     password: {
         type: String,
-        // require: [true,"Password Is Required"]
+        // require: true
     },
     profile_img: {
         type: String
