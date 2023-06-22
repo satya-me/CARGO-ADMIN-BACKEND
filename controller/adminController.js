@@ -30,6 +30,7 @@ exports.registerAdmin = async (req, res) => {
                 phone,
                 role,
                 password: "",
+                admin_type: "admin"
             });
 
             const user = await NewAdmin.save();
