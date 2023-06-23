@@ -27,6 +27,8 @@ exports.registerAdmin = async (req, res) => {
             return res.status(400).json({ success: false, message: "Email already exists" });
         } else if (adminUsername) {
             return res.status(400).json({ success: false, message: "Username already exists" });
+        } else if (phone) {
+            return res.status(400).json({ success: false, message: "Phone Number already exists" });
         } else {
             const NewAdmin = new AdminModel({
                 full_name,

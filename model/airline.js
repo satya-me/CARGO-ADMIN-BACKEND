@@ -2,10 +2,6 @@ const mongoose = require('mongoose');
 
 const Schema = mongoose.Schema;
 const airlineSchema = new Schema({
-    admin_type: {
-        type: String,
-        dafault: "airline"
-    },
     airline: {
         type: String,
         require: true
@@ -43,7 +39,11 @@ const airlineSchema = new Schema({
     },
     aireline_logo: {
         type: String
-    }
+    },
+    type: {
+        type: String,
+        dafault: "airline"
+    },
 }, { timestamps: true })
 
 
