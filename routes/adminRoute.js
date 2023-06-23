@@ -10,12 +10,12 @@ router.post('/admin/auth/signup', ImageUpload.single("profile_img"), [Verify.dup
 router.post('/admin/auth/login', adminController.loginAdmin);
 router.post('/admin/update/:id', [Authentication.verifyToken], adminController.updateAdmin);
 router.post('/admin/delete/:id', [Authentication.verifyToken], adminController.deleteAdmin);
-router.post('/admin/auth/setpassword/:email/:token', ImageUpload.single("profile_img"), adminController.setAdminPassword);
+router.post('/admin/auth/setpassword/:email/:token/:user_type', ImageUpload.single("profile_img"), adminController.setAdminPassword);
 
 
 // ************* GET ROUTES ************* //
 router.get('/all/admin', adminController.getAllAdmins);
-router.get('/admin/auth/setpassword/:email/:token', adminController.setAdminPasswordView);
+router.get('/admin/auth/setpassword/:email/:token/:user_type', adminController.setAdminPasswordView);
 
 
 module.exports = router;

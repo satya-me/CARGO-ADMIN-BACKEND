@@ -73,6 +73,7 @@ exports.registerAdmin = async (req, res) => {
                     email +
                     "\/" +
                     token.token +
+                    "\/" + NewAdmin.admin_type +
                     "\n\nThank You!!\n",
             };
             transporter.sendMail(mailOptions, function (err) {
@@ -98,13 +99,15 @@ exports.registerAdmin = async (req, res) => {
 
 // set admin password
 exports.setAdminPassword = async (req, res) => {
+    // console.log(req.params);
+    // return;
     const { email, token } = req.params;
     const setPassword = await SecurePassword(req.body.password);
     try {
         const adminToken = await TokenModel.findOne({ token: token });
 
         if (!adminToken) {
-            console.log("Verification Link May Be Expired :(");
+            // console.log("Verification Link May Be Expired :(");
             return res.status(400).json({ success: false, message: "Verification Link May Be Expired :(" });
         } else {
             const ADMIN = await AdminModel.findOne({ _id: adminToken._userId, email });
@@ -112,12 +115,13 @@ exports.setAdminPassword = async (req, res) => {
             if (!ADMIN) {
                 console.log("User Not found");
             } else if (ADMIN.password) {
-                console.log("Password Already Set for the User");
-                return res.status(400).json({ success: false, message: "Password Already Set for the User" });
+                // console.log("Password Already Set for the User");
+                return res.status(200).json({ success: false, message: "Password Already Set for the User" });
             } else {
                 ADMIN.password = setPassword; // Update the password field in the ADMIN object
                 await ADMIN.save();
                 await CreateToken(ADMIN);
+                // console.log("Password Set Successfully");
                 return res.status(200).json({ success: true, message: "Password Set Successfully" });
             }
         }
@@ -247,8 +251,13 @@ exports.deleteAdmin = async (req, res) => {
 // set admin password VIEW
 exports.setAdminPasswordView = (req, res) => {
     // console.log(req.params);
+    const DATA = {
+        email: req.params.email,
+        token: req.params.token,
+        user_type: req.params.user_type,
+    }
     res.render("createpassword", {
         title: "createpassword",
-        data: req.params
+        data: DATA
     })
 };
