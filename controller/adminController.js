@@ -22,12 +22,13 @@ exports.registerAdmin = async (req, res) => {
         }
         const adminEmail = await AdminModel.findOne({ email });
         const adminUsername = await AdminModel.findOne({ username });
+        const adminPhone = await AdminModel.findOne({ phone });
 
         if (adminEmail) {
             return res.status(400).json({ success: false, message: "Email already exists" });
         } else if (adminUsername) {
             return res.status(400).json({ success: false, message: "Username already exists" });
-        } else if (phone) {
+        } else if (adminPhone) {
             return res.status(400).json({ success: false, message: "Phone Number already exists" });
         } else {
             const NewAdmin = new AdminModel({
