@@ -2,7 +2,7 @@ const mongoose = require('mongoose');
 
 const Schema = mongoose.Schema;
 const vendorSchema = new Schema({
-    admin_type: {
+    type: {
         type: String,
         dafault: "vendor"
     },
@@ -19,6 +19,10 @@ const vendorSchema = new Schema({
         require: true
     },
     reporting_person_phone: {
+        type: String,
+        require: true
+    },
+    reporting_person_alt_phone: {
         type: String,
         require: true
     },
