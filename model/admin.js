@@ -37,10 +37,10 @@ const adminSchema = new Schema({
         type: Boolean,
         default: false
     },
-    admin_type: {
+    type: {
         type: String,
         dafault: "admin"
-    },
+    }
 }, { timestamps: true })
 
 

@@ -1,0 +1,64 @@
+[
+    {
+        "admin": {
+            "super admin": {
+                "access": true,
+                "create": true,
+                "edit": true,
+                "delete": true
+            },
+            "revenue": {
+                "access": true,
+                "create": true,
+                "edit": true,
+                "delete": true
+            },
+            "marketing": {
+                "access": true,
+                "create": true,
+                "edit": true,
+                "delete": true
+            }
+        },
+        "airline": {
+            "super admin": {
+                "access": true,
+                "create": false,
+                "edit": false,
+                "delete": false
+            },
+            "revenue": {
+                "access": true,
+                "create": false,
+                "edit": false,
+                "delete": false
+            },
+            "marketing": {
+                "access": true,
+                "create": true,
+                "edit": true,
+                "delete": false
+            }
+        },
+        "vendor": {
+            "super admin": {
+                "access": false,
+                "create": false,
+                "edit": false,
+                "delete": false
+            },
+            "revenue": {
+                "access": true,
+                "create": false,
+                "edit": false,
+                "delete": false
+            },
+            "marketing": {
+                "access": true,
+                "create": false,
+                "edit": false,
+                "delete": false
+            }
+        }
+    }
+]

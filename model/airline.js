@@ -43,7 +43,7 @@ const airlineSchema = new Schema({
     type: {
         type: String,
         dafault: "airline"
-    },
+    }
 }, { timestamps: true })
 
 
