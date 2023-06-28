@@ -1,37 +1,191 @@
 const VendorModel = require('../model/vendor');
+const TokenModel = require('../model/token');
+const bcryptjs = require('bcryptjs');
+const nodemailer = require('nodemailer');
+const crypto = require('crypto');
 const CreateToken = require('../config/createToken');
-// const SecurePassword = require('../config/securePassword');
+const SecurePassword = require('../config/securePassword');
 
 
 // vendor register
 exports.VendorRegistration = async (req, res) => {
     // console.log(req.body);
     // return;
-    const { vendor_name, reporting_person_name, reporting_person_email, reporting_person_phone, status } = req.body;
-    // const setPassword = await SecurePassword(req.body.password);
+    const { vendor_name, reporting_person_name, reporting_person_email, reporting_person_phone, reporting_person_alt_phone, HO_address, status, _airlineId } = req.body;
+    const img = req.file ? '/public/uploads/' + req.file.filename : "";
     try {
-        const NewVendor = new VendorModel({
-            vendor_name,
-            reporting_person_name,
-            reporting_person_email,
-            reporting_person_phone,
-            status,
-            // password: setPassword,
-            vendor_logo: "/public/uploads/" + req.file.filename
-        })
-        const vendorEmail = await VendorModel.findOne({ reporting_person_email: req.body.reporting_person_email });
-        const vendorPhone = await VendorModel.findOne({ reporting_person_phone: req.body.reporting_person_phone });
-        if (vendorEmail) {
-            return res.status(400).json({ success: false, message: "Email already exsist" });
-        } else if (vendorPhone) {
-            return res.status(400).json({ success: false, message: "Phone number already exsist" });
+        if (!(vendor_name && reporting_person_name && reporting_person_email && reporting_person_phone && reporting_person_alt_phone && HO_address && status)) {
+            return res.status(400).json({ success: false, message: "All Fields Are Required" });
         } else {
-            const SaveVendor = await NewVendor.save();
-            await CreateToken(SaveVendor);
-            return res.status(200).json({ success: true, message: "New Vendor Registered successfully" })
+            const newVendor = new VendorModel({
+                vendor_name,
+                reporting_person_name,
+                reporting_person_email,
+                reporting_person_phone,
+                reporting_person_alt_phone,
+                HO_address,
+                status,
+                password: "",
+                type: 'vendor',
+                vendor_logo: img,
+                _airlineId
+            })
+            const vendorEmail = await VendorModel.findOne({ reporting_person_email: req.body.reporting_person_email });
+            const vendorPhone = await VendorModel.findOne({ reporting_person_phone: req.body.reporting_person_phone });
+            const vendorAltPhone = await VendorModel.findOne({ reporting_person_alt_phone: req.body.reporting_person_alt_phone });
+            if (vendorEmail) {
+                return res.status(400).json({ success: false, message: "Email already exsist" });
+            } else if (vendorPhone) {
+                return res.status(400).json({ success: false, message: "Phone number already exsist" });
+            } else if (vendorAltPhone) {
+                return res.status(400).json({ success: false, message: "Phone number already exsist" });
+            } else {
+                const user = await newVendor.save();
+                // console.log(user);
+                // return;
+                const token = new TokenModel({
+                    _userId: user._id,
+                    token: crypto.randomBytes(16).toString("hex"),
+                });
+                await token.save();
+
+                var transporter = nodemailer.createTransport({
+                    host: "smtp.gmail.com",
+                    port: 587,
+                    secure: false,
+                    requireTLS: true,
+                    auth: {
+                        user: process.env.EMAIL_ID,
+                        pass: process.env.APP_PASSWORD
+                    },
+                });
+
+                var mailOptions = {
+                    from: "no-reply@surajit.com",
+                    to: user.reporting_person_email,
+                    subject: "Set Password Link",
+                    text:
+                        "Hello " +
+                        reporting_person_name +
+                        ",\n\n" +
+                        "Please set your " + vendor_name + " password by clicking the link: \nhttp:\/\/" +
+                        req.headers.host +
+                        "\/api\/vendor\/setpassword\/" +
+                        reporting_person_email +
+                        "\/" +
+                        token.token +
+                        "\/" + newVendor.type +
+                        "\n\nThank You!!\n",
+                };
+                transporter.sendMail(mailOptions, function (err) {
+                    if (err) {
+                        console.log("Technical Issues...");
+                        return res.status(400).json({ success: false, message: "Technical Issues" });
+                    } else {
+                        console.log("Mail Sent.....");
+                        return res.status(200).json({
+                            success: true,
+                            message:
+                                "An Email Sent To Your Email ID For Set Your Password. It Will Expire Within 24 Hours.",
+                        });
+                    }
+                });
+            }
+        }
+    }
+    catch (err) {
+        return res.status(400).json(err.message);
+    }
+}
+
+
+// set vendor password
+exports.setVendorPassword = async (req, res) => {
+    // console.log(req.params);
+    // return;
+    const { email, token } = req.params;
+    const setPassword = await SecurePassword(req.body.password);
+    try {
+        const TOKEN = await TokenModel.findOne({ token: token });
+
+        if (!TOKEN) {
+            // console.log("Verification Link May Be Expired :(");
+            return res.status(400).json({ success: false, message: "Verification Link May Be Expired :(" });
+        } else {
+            const VENDOR = await VendorModel.findOne({ _id: TOKEN._userId, reporting_person_email: email });
+
+            if (!VENDOR) {
+                // console.log("User Not found");
+                return res.status(404).json({ success: false, message: "User Not found" });
+            } else if (VENDOR.password) {
+                // console.log("Password Already Set for the User");
+                return res.status(200).json({ success: false, message: "Password Already Set for the User" });
+            } else {
+                VENDOR.password = setPassword; // Update the password field in the VENDOR object
+                await VENDOR.save();
+                await CreateToken(VENDOR);
+                // console.log("Password Set Successfully");
+                return res.status(200).json({ success: true, message: "Password Set Successfully" });
+            }
         }
     } catch (err) {
-        return res.status(400).json(err.message);
+        return res.status(500).json({ success: false, message: "Internal Server Error" });
+    }
+};
+
+
+// vendor login
+exports.loginVendor = async (req, res) => {
+    // console.log(req.body);
+    // return;
+    const { email, password, airlineID, isRemember } = req.body;
+    try {
+        if (!(email && password && airlineID)) {
+            return res.status(400).json({ success: false, message: "All Fields Are Required" });
+        }
+
+        const existingVendor = await VendorModel.findOne({ email });
+
+        if (existingVendor?.status === "Inactive") {
+            return res.status(403).json({ success: false, message: "You are not authorized" });
+        } else {
+            const VENDORDATA = {
+                id: existingVendor._id,
+                vendor_name: existingVendor.vendor_name,
+                reporting_person_name: existingVendor.reporting_person_name,
+                reporting_person_email: existingVendor.reporting_person_email,
+                reporting_person_phone: existingVendor.reporting_person_phone,
+                reporting_person_alt_phone: existingVendor.reporting_person_alt_phone,
+                HO_address: existingVendor.HO_address,
+                status: existingVendor.status,
+                type: existingVendor.type,
+            };
+
+
+            if (existingVendor && (bcryptjs.compareSync(password, existingVendor.password))) {
+                const tokenData = await CreateToken(existingVendor._id);
+                if (isRemember) {
+                    res.cookie('email', email);
+                    res.cookie('password', password);
+                    // const token = jwt.sign({ id: existingVendor._id }, secret_key, {
+                    //     expiresIn: '7d', // Set the token expiration time (e.g., 7 days)
+                    // });
+
+                    // const cookie = res.cookie('token', token, {
+                    //     maxAge: 7 * 24 * 60 * 60 * 1000, // Cookie expiry time in milliseconds (7 days)
+                    //     httpOnly: true, // The cookie is inaccessible to JavaScript
+                    //     secure: false, // The cookie is sent only over HTTPS if enabled
+                    //     // sameSite: 'strict' // The cookie is sent only for same-site requests
+                    // });
+                    // console.log(cookie);
+                }
+                return res.status(200).json({ success: true, message: "Login Successfully", data: VENDORDATA, token: tokenData });
+            } else {
+                return res.status(404).json({ success: false, message: "Invalid username or password. Please try again" })
+            }
+        }
+    } catch (err) {
+        return res.status(500).json({ success: false, message: "Internal Server Error" });
     }
 }
 
@@ -51,13 +205,18 @@ exports.getAllVendors = async (req, res) => {
 
 // update vendor
 exports.updateVendor = async (req, res) => {
-    const { vendor_name, reporting_person_name, reporting_person_email, reporting_person_phone, status } = req.body;
+    // console.log(req.body);
+    console.log(req.params);
+    // return;
+    const { vendor_name, reporting_person_name, reporting_person_email, reporting_person_phone, reporting_person_alt_phone, HO_address, status, _airlineId } = req.body;
+    const img = req.file ? '/public/uploads/' + req.file.filename : "";
     try {
         // Check for duplicate email or phone number
         const duplicateData = await VendorModel.findOne({
             $or: [
-                { email: reporting_person_email },
-                { phone: reporting_person_phone }
+                { reporting_person_email: reporting_person_email },
+                { reporting_person_phone: reporting_person_phone },
+                { reporting_person_alt_phone: reporting_person_alt_phone }
             ],
             _id: { $ne: req.params.id } // Exclude the current document being updated
         });
@@ -76,8 +235,11 @@ exports.updateVendor = async (req, res) => {
                 reporting_person_name,
                 reporting_person_email,
                 reporting_person_phone,
+                reporting_person_alt_phone,
+                HO_address,
+                _airlineId,
                 status,
-                vendor_logo: "/public/uploads/" + req.file.filename
+                vendor_logo: img
             },
             { useFindAndModify: false }
         );
@@ -116,3 +278,18 @@ exports.deleteVendor = async (req, res) => {
         return res.status(500).json({ success: false, message: "Internal Server Error" });
     }
 }
+
+
+// set vendor password VIEW
+exports.setVendorPasswordView = (req, res) => {
+    // console.log(req.params);
+    const DATA = {
+        email: req.params.email,
+        token: req.params.token,
+        user_type: req.params.user_type,
+    }
+    res.render("createpassword", {
+        title: "createpassword",
+        data: DATA
+    })
+};

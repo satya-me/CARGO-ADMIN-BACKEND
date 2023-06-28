@@ -116,7 +116,8 @@ exports.setAdminPassword = async (req, res) => {
             const ADMIN = await AdminModel.findOne({ _id: adminToken._userId, email });
 
             if (!ADMIN) {
-                console.log("User Not found");
+                // console.log("User Not found");
+                return res.status(404).json({ success: false, message: "User Not found" });
             } else if (ADMIN.password) {
                 // console.log("Password Already Set for the User");
                 return res.status(200).json({ success: false, message: "Password Already Set for the User" });

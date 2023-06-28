@@ -65,7 +65,7 @@ exports.addAirline = async (req, res) => {
                         "Hello " +
                         person_name +
                         ",\n\n" +
-                        "Please set your password by clicking the link: \nhttp:\/\/" +
+                        "Please set your " + airline + " password by clicking the link: \nhttp:\/\/" +
                         req.headers.host +
                         "\/api\/system\/airline\/setpassword\/" +
                         email +
@@ -118,7 +118,8 @@ exports.setAirlinePassword = async (req, res) => {
             const AIRLINE = await AirlineModel.findOne({ _id: TOKEN._userId, email });
 
             if (!AIRLINE) {
-                console.log("User Not found");
+                // console.log("User Not found");
+                return res.status(404).json({ success: false, message: "User Not found" });
             } else if (AIRLINE.password) {
                 // console.log("Password Already Set for the User");
                 return res.status(200).json({ success: false, message: "Password Already Set for the User" });

@@ -26,7 +26,7 @@ const vendorSchema = new Schema({
         type: String,
         require: true
     },
-    password: {
+    HO_address: {
         type: String,
         require: true
     },
