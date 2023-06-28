@@ -140,50 +140,56 @@ exports.loginVendor = async (req, res) => {
     // return;
     const { email, password, airlineID, isRemember } = req.body;
     try {
-        if (!(email && password && airlineID)) {
-            return res.status(400).json({ success: false, message: "All Fields Are Required" });
-        }
-
-        const existingVendor = await VendorModel.findOne({ email });
-
-        if (existingVendor?.status === "Inactive") {
-            return res.status(403).json({ success: false, message: "You are not authorized" });
+        if (!(airlineID)) {
+            return res.status(400).json({ success: false, message: "You Are Not Registered With This Airline" });
         } else {
-            const VENDORDATA = {
-                id: existingVendor._id,
-                vendor_name: existingVendor.vendor_name,
-                reporting_person_name: existingVendor.reporting_person_name,
-                reporting_person_email: existingVendor.reporting_person_email,
-                reporting_person_phone: existingVendor.reporting_person_phone,
-                reporting_person_alt_phone: existingVendor.reporting_person_alt_phone,
-                HO_address: existingVendor.HO_address,
-                status: existingVendor.status,
-                type: existingVendor.type,
-            };
-
-
-            if (existingVendor && (bcryptjs.compareSync(password, existingVendor.password))) {
-                const tokenData = await CreateToken(existingVendor._id);
-                if (isRemember) {
-                    res.cookie('email', email);
-                    res.cookie('password', password);
-                    // const token = jwt.sign({ id: existingVendor._id }, secret_key, {
-                    //     expiresIn: '7d', // Set the token expiration time (e.g., 7 days)
-                    // });
-
-                    // const cookie = res.cookie('token', token, {
-                    //     maxAge: 7 * 24 * 60 * 60 * 1000, // Cookie expiry time in milliseconds (7 days)
-                    //     httpOnly: true, // The cookie is inaccessible to JavaScript
-                    //     secure: false, // The cookie is sent only over HTTPS if enabled
-                    //     // sameSite: 'strict' // The cookie is sent only for same-site requests
-                    // });
-                    // console.log(cookie);
-                }
-                return res.status(200).json({ success: true, message: "Login Successfully", data: VENDORDATA, token: tokenData });
+            if (!email && password) {
+                return res.status(400).json({ success: false, message: "All Fields Are Required" });
             } else {
-                return res.status(404).json({ success: false, message: "Invalid username or password. Please try again" })
+                const existingVendor = await VendorModel.findOne({ reporting_person_email: email });
+                // console.log(existingVendor);
+                // return;
+                if (existingVendor?.status === "Inactive") {
+                    return res.status(403).json({ success: false, message: "You are not authorized" });
+                } else {
+                    const VENDORDATA = {
+                        id: existingVendor._id,
+                        vendor_name: existingVendor.vendor_name,
+                        reporting_person_name: existingVendor.reporting_person_name,
+                        reporting_person_email: existingVendor.reporting_person_email,
+                        reporting_person_phone: existingVendor.reporting_person_phone,
+                        reporting_person_alt_phone: existingVendor.reporting_person_alt_phone,
+                        HO_address: existingVendor.HO_address,
+                        status: existingVendor.status,
+                        type: existingVendor.type,
+                    };
+
+
+                    if (existingVendor && (bcryptjs.compareSync(password, existingVendor.password))) {
+                        const tokenData = await CreateToken(existingVendor._id);
+                        if (isRemember) {
+                            res.cookie('email', email);
+                            res.cookie('password', password);
+                            // const token = jwt.sign({ id: existingVendor._id }, secret_key, {
+                            //     expiresIn: '7d', // Set the token expiration time (e.g., 7 days)
+                            // });
+
+                            // const cookie = res.cookie('token', token, {
+                            //     maxAge: 7 * 24 * 60 * 60 * 1000, // Cookie expiry time in milliseconds (7 days)
+                            //     httpOnly: true, // The cookie is inaccessible to JavaScript
+                            //     secure: false, // The cookie is sent only over HTTPS if enabled
+                            //     // sameSite: 'strict' // The cookie is sent only for same-site requests
+                            // });
+                            // console.log(cookie);
+                        }
+                        return res.status(200).json({ success: true, message: "Login Successfully", data: VENDORDATA, token: tokenData });
+                    } else {
+                        return res.status(404).json({ success: false, message: "Invalid username or password. Please try again" })
+                    }
+                }
             }
         }
+
     } catch (err) {
         return res.status(500).json({ success: false, message: "Internal Server Error" });
     }
