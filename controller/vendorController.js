@@ -162,6 +162,7 @@ exports.loginVendor = async (req, res) => {
                         HO_address: existingVendor.HO_address,
                         status: existingVendor.status,
                         type: existingVendor.type,
+                        role: existingVendor.role,
                     };
 
 
