@@ -11,10 +11,10 @@ const SecurePassword = require('../config/securePassword');
 exports.VendorRegistration = async (req, res) => {
     // console.log(req.body);
     // return;
-    const { vendor_name, reporting_person_name, reporting_person_email, reporting_person_phone, reporting_person_alt_phone, HO_address, status, _airlineId } = req.body;
+    const { vendor_name, reporting_person_name, reporting_person_email, reporting_person_phone, reporting_person_alt_phone, HO_address, status, role, _airlineId } = req.body;
     const img = req.file ? '/public/uploads/' + req.file.filename : "";
     try {
-        if (!(vendor_name && reporting_person_name && reporting_person_email && reporting_person_phone && reporting_person_alt_phone && HO_address && status)) {
+        if (!(vendor_name && reporting_person_name && reporting_person_email && reporting_person_phone && reporting_person_alt_phone && HO_address && status && role)) {
             return res.status(400).json({ success: false, message: "All Fields Are Required" });
         } else {
             const newVendor = new VendorModel({
@@ -25,6 +25,7 @@ exports.VendorRegistration = async (req, res) => {
                 reporting_person_alt_phone,
                 HO_address,
                 status,
+                role,
                 password: "",
                 type: 'vendor',
                 vendor_logo: img,
