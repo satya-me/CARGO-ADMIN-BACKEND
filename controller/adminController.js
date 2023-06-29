@@ -146,11 +146,14 @@ exports.loginAdmin = async (req, res) => {
         }
 
         const existingAdmin = await AdminModel.findOne({ username });
+
         if (!existingAdmin) {
             return res.status(404).json({ success: false, message: "User Not Found" });
         } else {
             if (existingAdmin?.status === "Inactive") {
                 return res.status(403).json({ success: false, message: "You are not authorized" });
+            } else if (existingAdmin?.password?.length === 0) {
+                return res.status(403).json({ success: false, message: "You did not created your password yet. Please check your email." });
             } else {
                 const ADMINDATA = {
                     id: existingAdmin._id,

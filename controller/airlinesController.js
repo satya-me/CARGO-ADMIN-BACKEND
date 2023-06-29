@@ -146,7 +146,7 @@ exports.loginAirline = async (req, res) => {
         if (!(email && password)) {
             return res.status(400).json({ success: false, message: "All Fields Are Required" });
         }
-        
+
         const existingAirline = await AirlineModel.findOne({ email });
 
         if (!existingAirline) {
@@ -154,6 +154,8 @@ exports.loginAirline = async (req, res) => {
         } else {
             if (existingAirline?.status === "Inactive") {
                 return res.status(403).json({ success: false, message: "You are not authorized" });
+            } else if (existingAirline?.password?.length === 0) {
+                return res.status(403).json({ success: false, message: "You did not created your password yet. Please check your email." });
             } else {
                 const AIRLINEDATA = {
                     id: existingAirline._id,

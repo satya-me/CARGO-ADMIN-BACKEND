@@ -156,6 +156,8 @@ exports.loginVendor = async (req, res) => {
                 } else {
                     if (existingVendor?.status === "Inactive") {
                         return res.status(403).json({ success: false, message: "You are not authorized" });
+                    } else if (existingVendor?.password?.length === 0) {
+                        return res.status(403).json({ success: false, message: "You did not created your password yet. Please check your email." });
                     } else {
                         const VENDORDATA = {
                             id: existingVendor._id,
