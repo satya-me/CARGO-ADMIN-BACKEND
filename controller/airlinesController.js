@@ -146,45 +146,49 @@ exports.loginAirline = async (req, res) => {
         if (!(email && password)) {
             return res.status(400).json({ success: false, message: "All Fields Are Required" });
         }
-
+        
         const existingAirline = await AirlineModel.findOne({ email });
 
-        if (existingAirline?.status === "Inactive") {
-            return res.status(403).json({ success: false, message: "You are not authorized" });
+        if (!existingAirline) {
+            return res.status(404).json({ success: false, message: "User Not Found" });
         } else {
-            const AIRLINEDATA = {
-                id: existingAirline._id,
-                airline: existingAirline.airline,
-                person_name: existingAirline.person_name,
-                person_designation: existingAirline.person_designation,
-                email: existingAirline.email,
-                phone: existingAirline.phone,
-                role: existingAirline.role,
-                status: existingAirline.status,
-                type: existingAirline.type,
-            };
-
-
-            if (existingAirline && (bcryptjs.compareSync(password, existingAirline.password))) {
-                const tokenData = await CreateToken(existingAirline._id);
-                if (isRemember) {
-                    res.cookie('email', email);
-                    res.cookie('password', password);
-                    // const token = jwt.sign({ id: existingAirline._id }, secret_key, {
-                    //     expiresIn: '7d', // Set the token expiration time (e.g., 7 days)
-                    // });
-
-                    // const cookie = res.cookie('token', token, {
-                    //     maxAge: 7 * 24 * 60 * 60 * 1000, // Cookie expiry time in milliseconds (7 days)
-                    //     httpOnly: true, // The cookie is inaccessible to JavaScript
-                    //     secure: false, // The cookie is sent only over HTTPS if enabled
-                    //     // sameSite: 'strict' // The cookie is sent only for same-site requests
-                    // });
-                    // console.log(cookie);
-                }
-                return res.status(200).json({ success: true, message: "Login Successfully", data: AIRLINEDATA, token: tokenData });
+            if (existingAirline?.status === "Inactive") {
+                return res.status(403).json({ success: false, message: "You are not authorized" });
             } else {
-                return res.status(404).json({ success: false, message: "Invalid username or password. Please try again" })
+                const AIRLINEDATA = {
+                    id: existingAirline._id,
+                    airline: existingAirline.airline,
+                    person_name: existingAirline.person_name,
+                    person_designation: existingAirline.person_designation,
+                    email: existingAirline.email,
+                    phone: existingAirline.phone,
+                    role: existingAirline.role,
+                    status: existingAirline.status,
+                    type: existingAirline.type,
+                };
+
+
+                if (existingAirline && (bcryptjs.compareSync(password, existingAirline.password))) {
+                    const tokenData = await CreateToken(existingAirline._id);
+                    if (isRemember) {
+                        res.cookie('email', email);
+                        res.cookie('password', password);
+                        // const token = jwt.sign({ id: existingAirline._id }, secret_key, {
+                        //     expiresIn: '7d', // Set the token expiration time (e.g., 7 days)
+                        // });
+
+                        // const cookie = res.cookie('token', token, {
+                        //     maxAge: 7 * 24 * 60 * 60 * 1000, // Cookie expiry time in milliseconds (7 days)
+                        //     httpOnly: true, // The cookie is inaccessible to JavaScript
+                        //     secure: false, // The cookie is sent only over HTTPS if enabled
+                        //     // sameSite: 'strict' // The cookie is sent only for same-site requests
+                        // });
+                        // console.log(cookie);
+                    }
+                    return res.status(200).json({ success: true, message: "Login Successfully", data: AIRLINEDATA, token: tokenData });
+                } else {
+                    return res.status(404).json({ success: false, message: "Invalid username or password. Please try again" })
+                }
             }
         }
     } catch (err) {

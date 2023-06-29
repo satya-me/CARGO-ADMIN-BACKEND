@@ -146,40 +146,43 @@ exports.loginAdmin = async (req, res) => {
         }
 
         const existingAdmin = await AdminModel.findOne({ username });
-        
-        if (existingAdmin?.status === "Inactive") {
-            return res.status(403).json({ success: false, message: "You are not authorized" });
+        if (!existingAdmin) {
+            return res.status(404).json({ success: false, message: "User Not Found" });
         } else {
-            const ADMINDATA = {
-                id: existingAdmin._id,
-                full_name: existingAdmin.full_name,
-                username: existingAdmin.username,
-                email: existingAdmin.email,
-                phone: existingAdmin.phone,
-                role: existingAdmin.role,
-                status: existingAdmin.status,
-                type: existingAdmin.type
-            };
-            if (existingAdmin && (bcryptjs.compareSync(password, existingAdmin.password))) {
-                const tokenData = await CreateToken(existingAdmin._id);
-                if (isRemember) {
-                    res.cookie('username', username);
-                    res.cookie('password', password);
-                    // const token = jwt.sign({ id: existingAdmin._id }, secret_key, {
-                    //     expiresIn: '7d', // Set the token expiration time (e.g., 7 days)
-                    // });
-
-                    // const cookie = res.cookie('token', token, {
-                    //     maxAge: 7 * 24 * 60 * 60 * 1000, // Cookie expiry time in milliseconds (7 days)
-                    //     httpOnly: true, // The cookie is inaccessible to JavaScript
-                    //     secure: false, // The cookie is sent only over HTTPS if enabled
-                    //     // sameSite: 'strict' // The cookie is sent only for same-site requests
-                    // });
-                    // console.log(cookie);
-                }
-                return res.status(200).json({ success: true, message: "Login Successfully", data: ADMINDATA, token: tokenData });
+            if (existingAdmin?.status === "Inactive") {
+                return res.status(403).json({ success: false, message: "You are not authorized" });
             } else {
-                return res.status(404).json({ success: false, message: "Invalid username or password. Please try again" })
+                const ADMINDATA = {
+                    id: existingAdmin._id,
+                    full_name: existingAdmin.full_name,
+                    username: existingAdmin.username,
+                    email: existingAdmin.email,
+                    phone: existingAdmin.phone,
+                    role: existingAdmin.role,
+                    status: existingAdmin.status,
+                    type: existingAdmin.type
+                };
+                if (existingAdmin && (bcryptjs.compareSync(password, existingAdmin.password))) {
+                    const tokenData = await CreateToken(existingAdmin._id);
+                    if (isRemember) {
+                        res.cookie('username', username);
+                        res.cookie('password', password);
+                        // const token = jwt.sign({ id: existingAdmin._id }, secret_key, {
+                        //     expiresIn: '7d', // Set the token expiration time (e.g., 7 days)
+                        // });
+
+                        // const cookie = res.cookie('token', token, {
+                        //     maxAge: 7 * 24 * 60 * 60 * 1000, // Cookie expiry time in milliseconds (7 days)
+                        //     httpOnly: true, // The cookie is inaccessible to JavaScript
+                        //     secure: false, // The cookie is sent only over HTTPS if enabled
+                        //     // sameSite: 'strict' // The cookie is sent only for same-site requests
+                        // });
+                        // console.log(cookie);
+                    }
+                    return res.status(200).json({ success: true, message: "Login Successfully", data: ADMINDATA, token: tokenData });
+                } else {
+                    return res.status(404).json({ success: false, message: "Invalid username or password. Please try again" })
+                }
             }
         }
     } catch (err) {
