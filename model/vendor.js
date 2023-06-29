@@ -24,7 +24,6 @@ const vendorSchema = new Schema({
     },
     reporting_person_alt_phone: {
         type: String,
-        require: true
     },
     HO_address: {
         type: String,

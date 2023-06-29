@@ -71,29 +71,35 @@ exports.duplicateVendorCheck = async (req, res, next) => {
     const filePath = req.file ? './public/uploads/' + req.file.filename : ""; // Specify the path to the file
 
     try {
-        const { vendor_name, reporting_person_email, reporting_person_phone } = req.body;
+        const { vendor_name, reporting_person_email, reporting_person_phone, _airlineId } = req.body;
         const check_vendor_name = await VendorModel.findOne({ vendor_name });
         const check_email = await VendorModel.findOne({ reporting_person_email });
         const check_phone = await VendorModel.findOne({ reporting_person_phone });
+        const check_airline_id = await VendorModel.findOne({ _airlineId });
 
         // Delete the file
         if (check_vendor_name || check_email || check_phone) {
-            fs.unlink(filePath, (err) => {
-                if (err) {
-                    console.error("error ==>", err);
-                    return;
-                }
-                console.log('File Deleted Successfully After Duplicate Detection');
-            });
+            if (req.file) {
+                fs.unlink(filePath, (err) => {
+                    if (err) {
+                        console.error("verify error line-87==>", err);
+                        return;
+                    }
+                    console.log('File Deleted Successfully After Duplicate Detection');
+                });
+            }
         }
 
-        if (check_vendor_name) {
-            return res.status(409).json({ success: false, message: `Vendor '${vendor_name}' Already Exsists.` });
-        } else if (check_email) {
-            return res.status(409).json({ success: false, message: `Email '${reporting_person_email}' Already Exsists.` });
-        } else if (check_phone) {
-            return res.status(409).json({ success: false, message: `Phone Number '${reporting_person_phone}' Already Exsists.` });
+        // if (check_airline_id) {
+        if (check_vendor_name?.vendor_name == check_airline_id?.vendor_name) {
+            return res.status(409).json({ success: false, message: `Vendor '${vendor_name}' Already Exsists For This Airline.` });
+        } else if (check_email?.reporting_person_email == check_airline_id?.reporting_person_email) {
+            return res.status(409).json({ success: false, message: `Email '${reporting_person_email}' Already Exsists For This Airline.` });
+        } else if (check_phone?.reporting_person_phone == check_airline_id?.reporting_person_phone) {
+            return res.status(409).json({ success: false, message: `Phone Number '${reporting_person_phone}' Already Exsists For This Airline.` });
         }
+        //     return res.status(409).json({ success: false, message: `You Already Registered With '${check_airline.airline}'` });
+        // }
 
     } catch (exc) {
         return res.status(404).json({ success: false, message: "Data Not Found" })

@@ -1,4 +1,5 @@
 const VendorModel = require('../model/vendor');
+const AirlineModel = require('../model/airline');
 const TokenModel = require('../model/token');
 const bcryptjs = require('bcryptjs');
 const nodemailer = require('nodemailer');
@@ -14,10 +15,10 @@ exports.VendorRegistration = async (req, res) => {
     const { vendor_name, reporting_person_name, reporting_person_email, reporting_person_phone, reporting_person_alt_phone, HO_address, status, role, _airlineId } = req.body;
     const img = req.file ? '/public/uploads/' + req.file.filename : "";
     try {
-        if (!(vendor_name && reporting_person_name && reporting_person_email && reporting_person_phone && reporting_person_alt_phone && HO_address && status && role)) {
+        if (!(vendor_name && reporting_person_name && reporting_person_email && reporting_person_phone && HO_address && status && role)) {
             return res.status(400).json({ success: false, message: "All Fields Are Required" });
         } else {
-            const newVendor = new VendorModel({
+            const NewVendor = new VendorModel({
                 vendor_name,
                 reporting_person_name,
                 reporting_person_email,
@@ -30,72 +31,82 @@ exports.VendorRegistration = async (req, res) => {
                 type: 'vendor',
                 vendor_logo: img,
                 _airlineId
-            })
-            // const vendorEmail = await VendorModel.findOne({ reporting_person_email: req.body.reporting_person_email });
-            // const vendorPhone = await VendorModel.findOne({ reporting_person_phone: req.body.reporting_person_phone });
-            // const vendorAltPhone = await VendorModel.findOne({ reporting_person_alt_phone: req.body.reporting_person_alt_phone });
-            const vendorAirline = await VendorModel.findOne({ _airlineId: _airlineId });
-            if (vendorAirline) {
-                return res.status(400).json({ success: false, message: "You Already Reagistered With This Airline" });
-                // } else if (vendorPhone) {
-                //     return res.status(400).json({ success: false, message: "Phone number already exsist" });
-                // } else if (vendorAltPhone) {
-                //     return res.status(400).json({ success: false, message: "Phone number already exsist" });
-            } else {
-                const user = await newVendor.save();
-                // console.log(user);
-                // return;
-                const token = new TokenModel({
-                    _userId: user._id,
-                    token: crypto.randomBytes(16).toString("hex"),
-                });
-                await token.save();
+            });
+            // console.log(NewVendor);
+            // return;
 
-                var transporter = nodemailer.createTransport({
-                    host: "smtp.gmail.com",
-                    port: 587,
-                    secure: false,
-                    requireTLS: true,
-                    auth: {
-                        user: process.env.EMAIL_ID,
-                        pass: process.env.APP_PASSWORD
-                    },
-                });
-
-                var mailOptions = {
-                    from: "no-reply@surajit.com",
-                    to: user.reporting_person_email,
-                    subject: "Set Password Link",
-                    text:
-                        "Hello " +
-                        reporting_person_name +
-                        ",\n\n" +
-                        "Please set your " + vendor_name + " password by clicking the link: \nhttp:\/\/" +
-                        req.headers.host +
-                        "\/api\/vendor\/setpassword\/" +
-                        reporting_person_email +
-                        "\/" +
-                        token.token +
-                        "\/" + newVendor.type +
-                        "\n\nThank You!!\n",
-                };
-                transporter.sendMail(mailOptions, function (err) {
-                    if (err) {
-                        console.log("Technical Issues...");
-                        return res.status(400).json({ success: false, message: "Technical Issues" });
-                    } else {
-                        console.log("Mail Sent.....");
-                        return res.status(200).json({
-                            success: true,
-                            message:
-                                "An Email Sent To Your Email ID For Set Your Password. It Will Expire Within 24 Hours.",
-                        });
-                    }
-                });
+            // Retrieve the list of indexes for the VendorModel collection
+            const indexes = await VendorModel.collection.indexes();
+            // Check if the index for reporting_person_email exists
+            const reportingPersonEmailIndexExists = indexes.some(index => index.name === 'reporting_person_email_1');
+            // Check if the index for reporting_person_phone exists
+            const reportingPersonPhoneIndexExists = indexes.some(index => index.name === 'reporting_person_phone_1');
+            // Conditionally drop the index for reporting_person_email field
+            if (reportingPersonEmailIndexExists) {
+                await VendorModel.collection.dropIndex('reporting_person_email_1');
             }
+            // Conditionally drop the index for reporting_person_phone field
+            if (reportingPersonPhoneIndexExists) {
+                await VendorModel.collection.dropIndex('reporting_person_phone_1');
+            }
+            // save vendor
+            const user = await NewVendor.save();
+            
+            // console.log(user);
+            // return;
+
+            const token = new TokenModel({
+                _userId: user._id,
+                token: crypto.randomBytes(16).toString("hex"),
+            });
+            await token.save();
+
+            var transporter = nodemailer.createTransport({
+                host: "smtp.gmail.com",
+                port: 587,
+                secure: false,
+                requireTLS: true,
+                auth: {
+                    user: process.env.EMAIL_ID,
+                    pass: process.env.APP_PASSWORD
+                },
+            });
+
+            var mailOptions = {
+                from: "no-reply@surajit.com",
+                to: user.reporting_person_email,
+                subject: "Set Password Link",
+                text:
+                    "Hello " +
+                    reporting_person_name +
+                    ",\n\n" +
+                    "Please set your " + vendor_name + " password by clicking the link: \nhttp:\/\/" +
+                    req.headers.host +
+                    "\/api\/vendor\/setpassword\/" +
+                    reporting_person_email +
+                    "\/" +
+                    token.token +
+                    "\/" + NewVendor.type +
+                    "\n\nThank You!!\n",
+            };
+            transporter.sendMail(mailOptions, function (err) {
+                if (err) {
+                    console.log("Technical Issues...");
+                    return res.status(400).json({ success: false, message: "Technical Issues" });
+                } else {
+                    console.log("Mail Sent.....");
+                    return res.status(200).json({
+                        success: true,
+                        message:
+                            "An Email Sent To Your Email ID For Set Your Password. It Will Expire Within 24 Hours.",
+                    });
+                }
+            });
         }
+        // }
     }
     catch (err) {
+        console.log("catch==>");
         return res.status(400).json(err.message);
     }
 }
@@ -170,6 +181,7 @@ exports.loginVendor = async (req, res) => {
                             status: existingVendor.status,
                             type: existingVendor.type,
                             role: existingVendor.role,
+                            _airlineId: existingVendor._airlineId,
                         };
 
 
