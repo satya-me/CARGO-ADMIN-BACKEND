@@ -165,46 +165,50 @@ exports.loginVendor = async (req, res) => {
                 if (!existingVendor) {
                     return res.status(404).json({ success: false, message: "User Not Found" });
                 } else {
-                    if (existingVendor?.status === "Inactive") {
-                        return res.status(403).json({ success: false, message: "You are not authorized" });
-                    } else if (existingVendor?.password?.length === 0) {
-                        return res.status(403).json({ success: false, message: "You did not created your password yet. Please check your email." });
+                    if (existingVendor?.isDeleted === true) {
+                        return res.status(401).json({ success: false, message: "You subscription has been suspended" });
                     } else {
-                        const VENDORDATA = {
-                            id: existingVendor._id,
-                            vendor_name: existingVendor.vendor_name,
-                            reporting_person_name: existingVendor.reporting_person_name,
-                            reporting_person_email: existingVendor.reporting_person_email,
-                            reporting_person_phone: existingVendor.reporting_person_phone,
-                            reporting_person_alt_phone: existingVendor.reporting_person_alt_phone,
-                            HO_address: existingVendor.HO_address,
-                            status: existingVendor.status,
-                            type: existingVendor.type,
-                            role: existingVendor.role,
-                            _airlineId: existingVendor._airlineId,
-                        };
-
-
-                        if (existingVendor && (bcryptjs.compareSync(password, existingVendor.password))) {
-                            const tokenData = await CreateToken(existingVendor._id);
-                            if (isRemember) {
-                                res.cookie('email', email);
-                                res.cookie('password', password);
-                                // const token = jwt.sign({ id: existingVendor._id }, secret_key, {
-                                //     expiresIn: '7d', // Set the token expiration time (e.g., 7 days)
-                                // });
-
-                                // const cookie = res.cookie('token', token, {
-                                //     maxAge: 7 * 24 * 60 * 60 * 1000, // Cookie expiry time in milliseconds (7 days)
-                                //     httpOnly: true, // The cookie is inaccessible to JavaScript
-                                //     secure: false, // The cookie is sent only over HTTPS if enabled
-                                //     // sameSite: 'strict' // The cookie is sent only for same-site requests
-                                // });
-                                // console.log(cookie);
-                            }
-                            return res.status(200).json({ success: true, message: "Login Successfully", data: VENDORDATA, token: tokenData });
+                        if (existingVendor?.status === "Inactive") {
+                            return res.status(403).json({ success: false, message: "You are not authorized" });
+                        } else if (existingVendor?.password?.length === 0) {
+                            return res.status(403).json({ success: false, message: "You did not created your password yet. Please check your email." });
                         } else {
-                            return res.status(404).json({ success: false, message: "Invalid username or password. Please try again" })
+                            const VENDORDATA = {
+                                id: existingVendor._id,
+                                vendor_name: existingVendor.vendor_name,
+                                reporting_person_name: existingVendor.reporting_person_name,
+                                reporting_person_email: existingVendor.reporting_person_email,
+                                reporting_person_phone: existingVendor.reporting_person_phone,
+                                reporting_person_alt_phone: existingVendor.reporting_person_alt_phone,
+                                HO_address: existingVendor.HO_address,
+                                status: existingVendor.status,
+                                type: existingVendor.type,
+                                role: existingVendor.role,
+                                _airlineId: existingVendor._airlineId,
+                            };
+
+
+                            if (existingVendor && (bcryptjs.compareSync(password, existingVendor.password))) {
+                                const tokenData = await CreateToken(existingVendor._id);
+                                if (isRemember) {
+                                    res.cookie('email', email);
+                                    res.cookie('password', password);
+                                    // const token = jwt.sign({ id: existingVendor._id }, secret_key, {
+                                    //     expiresIn: '7d', // Set the token expiration time (e.g., 7 days)
+                                    // });
+
+                                    // const cookie = res.cookie('token', token, {
+                                    //     maxAge: 7 * 24 * 60 * 60 * 1000, // Cookie expiry time in milliseconds (7 days)
+                                    //     httpOnly: true, // The cookie is inaccessible to JavaScript
+                                    //     secure: false, // The cookie is sent only over HTTPS if enabled
+                                    //     // sameSite: 'strict' // The cookie is sent only for same-site requests
+                                    // });
+                                    // console.log(cookie);
+                                }
+                                return res.status(200).json({ success: true, message: "Login Successfully", data: VENDORDATA, token: tokenData });
+                            } else {
+                                return res.status(404).json({ success: false, message: "Invalid username or password. Please try again" })
+                            }
                         }
                     }
                 }
