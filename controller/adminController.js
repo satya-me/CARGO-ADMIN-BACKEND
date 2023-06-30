@@ -163,7 +163,7 @@ exports.loginAdmin = async (req, res) => {
                     phone: existingAdmin.phone,
                     role: existingAdmin.role,
                     status: existingAdmin.status,
-                    type: existingAdmin.type
+                    type: "admin"
                 };
                 if (existingAdmin && (bcryptjs.compareSync(password, existingAdmin.password))) {
                     const tokenData = await CreateToken(existingAdmin._id);
