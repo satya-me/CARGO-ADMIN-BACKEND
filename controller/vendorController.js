@@ -51,7 +51,7 @@ exports.VendorRegistration = async (req, res) => {
             }
             // save vendor
             const user = await NewVendor.save();
-            
+
             // console.log(user);
             // return;
 
@@ -222,7 +222,7 @@ exports.getAllVendors = async (req, res) => {
     // console.log(req.body);
     // return;
     try {
-        const allVendors = await VendorModel.find();
+        const allVendors = await VendorModel.find().populate('_airlineId');
         return res.status(200).json({ success: true, message: "Data Fetched Successfully", data: allVendors });
     } catch (exc) {
         return res.status(404).json({ success: false, message: "Data Not Found" });
@@ -285,6 +285,8 @@ exports.updateVendor = async (req, res) => {
 
 // delete vendor (soft delete)
 exports.deleteVendor = async (req, res) => {
+    // console.log(req.params);
+    // return;
     try {
         const vendor = await VendorModel.findById(req.params.id);
         if (!vendor) {
