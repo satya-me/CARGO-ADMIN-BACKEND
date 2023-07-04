@@ -277,6 +277,8 @@ exports.setAdminPasswordView = (req, res) => {
         email: req.params.email,
         token: req.params.token,
         user_type: req.params.user_type,
+        backend_url: process.env.HOST,
+        frontend_url: process.env.REACT_HOST,
     }
     res.render("createpassword", {
         title: "createpassword",
