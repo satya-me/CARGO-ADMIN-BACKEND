@@ -313,6 +313,112 @@ exports.deleteVendor = async (req, res) => {
 }
 
 
+// forget password
+exports.forgotVendorPassword = async (req, res) => {
+    // console.log(req.body);
+    // return;
+    const { email, airline_name } = req.body;
+    try {
+        if (!(email)) {
+            return res.status(400).json({ success: false, message: "All Fields Are Required.Please try again" });
+        }
+        const vendor = await VendorModel.findOne({ reporting_person_email: email });
+
+        // console.log(vendor);
+        // return;
+
+        if (!vendor) {
+            return res.status(400).json({ success: false, message: "This Email Is Not Registered With Us" });
+        } else {
+            const token = new TokenModel({
+                _userId: vendor._id,
+                token: crypto.randomBytes(16).toString("hex"),
+            });
+
+            await token.save();
+
+            var transporter = nodemailer.createTransport({
+                host: "smtp.gmail.com",
+                port: 587,
+                secure: false,
+                requireTLS: true,
+                auth: {
+                    user: process.env.EMAIL_ID,
+                    pass: process.env.APP_PASSWORD
+                },
+            });
+
+            var mailOptions = {
+                from: "no-reply@surajit.com",
+                to: vendor.reporting_person_email,
+                subject: "Forgot Password Link",
+                text:
+                    "Hello " +
+                    vendor.reporting_person_name +
+                    ",\n\n" +
+                    "Please reset your password by clicking the link: \nhttp:\/\/" +
+                    req.headers.host +
+                    "\/api\/vendor\/forgot\/password\/" +
+                    email +
+                    "\/" +
+                    token.token +
+                    // "\/" + airline.AIRLINE_type +
+                    "\/" + "vendor" + "\/" + airline_name +
+                    "\n\nThank You!!\n",
+            };
+            transporter.sendMail(mailOptions, function (err) {
+                if (err) {
+                    console.log("Technical Issues...");
+                    return res.status(400).json({ success: false, message: "Technical Issues" });
+                } else {
+                    console.log("Mail Sent.....");
+                    return res.status(200).json({
+                        success: true,
+                        message:
+                            "An Email Sent To Your Email ID For Set Your Password. It Will Expire Within 24 Hours.",
+                    });
+                }
+            });
+        }
+    } catch (exc) {
+        console.log("Error:", exc);
+        return res.status(404).json({ success: false, message: exc });
+    }
+}
+
+
+// set VENDOR password
+exports.resetVendorPassword = async (req, res) => {
+    // console.log(req.params);
+    // return;
+    const { email, token } = req.params;
+    const setPassword = await SecurePassword(req.body.password);
+    try {
+        const vendorToken = await TokenModel.findOne({ token: token });
+
+        if (!vendorToken) {
+            // console.log("Verification Link May Be Expired :(");
+            return res.status(400).json({ success: false, message: "Verification Link May Be Expired :(" });
+        } else {
+            const VENDOR = await VendorModel.findOne({ _id: vendorToken._userId, reporting_person_email: email });
+
+            if (!VENDOR) {
+                // console.log("User Not found");
+                return res.status(404).json({ success: false, message: "User Not found" });
+            } else {
+                VENDOR.password = setPassword; // Update the password field in the VENDOR object
+                await VENDOR.save();
+                await CreateToken(VENDOR);
+                // console.log("Password Set Successfully");
+                return res.status(200).json({ success: true, message: "Password Reset Successfully" });
+            }
+        }
+    } catch (err) {
+        return res.status(500).json({ success: false, message: "Internal Server Error" });
+    }
+};
+
+
 // set vendor password VIEW
 exports.setVendorPasswordView = (req, res) => {
     // console.log(req.params);
@@ -325,6 +431,24 @@ exports.setVendorPasswordView = (req, res) => {
     }
     res.render("createpassword", {
         title: "createpassword",
+        data: DATA
+    })
+};
+
+
+// set airline password VIEW
+exports.resetVendorPasswordView = (req, res) => {
+    // console.log(req.params);
+    const DATA = {
+        email: req.params.email,
+        token: req.params.token,
+        user_type: req.params.user_type,
+        airline_name: req.params.airline_name,
+        backend_url: process.env.HOST,
+        frontend_url: process.env.REACT_HOST,
+    }
+    res.render("resetnewpassword", {
+        title: "reset-new-password",
         data: DATA
     })
 };

@@ -270,6 +270,112 @@ exports.deleteAdmin = async (req, res) => {
 }
 
 
+// forget password
+exports.forgotPassword = async (req, res) => {
+    // console.log(req.body);
+    // return;
+    const { email } = req.body;
+    try {
+        if (!(email)) {
+            return res.status(400).json({ success: false, message: "All Fields Are Required.Please try again" });
+        }
+        const adminEmail = await AdminModel.findOne({ email });
+
+        // console.log(adminEmail);
+        // return;
+
+        if (!adminEmail) {
+            return res.status(400).json({ success: false, message: "This Email Is Not Registered With Us" });
+        } else {
+            const token = new TokenModel({
+                _userId: adminEmail._id,
+                token: crypto.randomBytes(16).toString("hex"),
+            });
+
+            await token.save();
+
+            var transporter = nodemailer.createTransport({
+                host: "smtp.gmail.com",
+                port: 587,
+                secure: false,
+                requireTLS: true,
+                auth: {
+                    user: process.env.EMAIL_ID,
+                    pass: process.env.APP_PASSWORD
+                },
+            });
+
+            var mailOptions = {
+                from: "no-reply@surajit.com",
+                to: adminEmail.email,
+                subject: "Forgot Password Link",
+                text:
+                    "Hello " +
+                    adminEmail.full_name +
+                    ",\n\n" +
+                    "Please reset your password by clicking the link: \nhttp:\/\/" +
+                    req.headers.host +
+                    "\/api\/admin\/auth\/forgot\/password\/" +
+                    email +
+                    "\/" +
+                    token.token +
+                    // "\/" + adminEmail.admin_type +
+                    "\/" + "admin" +
+                    "\n\nThank You!!\n",
+            };
+            transporter.sendMail(mailOptions, function (err) {
+                if (err) {
+                    console.log("Technical Issues...");
+                    return res.status(400).json({ success: false, message: "Technical Issues" });
+                } else {
+                    console.log("Mail Sent.....");
+                    return res.status(200).json({
+                        success: true,
+                        message:
+                            "An Email Sent To Your Email ID For Set Your Password. It Will Expire Within 24 Hours.",
+                    });
+                }
+            });
+        }
+    } catch (exc) {
+        console.log("Error:", exc);
+        return res.status(404).json({ success: false, message: exc });
+    }
+}
+
+
+// set admin password
+exports.resetAdminPassword = async (req, res) => {
+    // console.log(req.params);
+    // return;
+    const { email, token } = req.params;
+    const setPassword = await SecurePassword(req.body.password);
+    try {
+        const adminToken = await TokenModel.findOne({ token: token });
+
+        if (!adminToken) {
+            // console.log("Verification Link May Be Expired :(");
+            return res.status(400).json({ success: false, message: "Verification Link May Be Expired :(" });
+        } else {
+            const ADMIN = await AdminModel.findOne({ _id: adminToken._userId, email });
+
+            if (!ADMIN) {
+                // console.log("User Not found");
+                return res.status(404).json({ success: false, message: "User Not found" });
+            } else {
+                ADMIN.password = setPassword; // Update the password field in the ADMIN object
+                await ADMIN.save();
+                await CreateToken(ADMIN);
+                // console.log("Password Set Successfully");
+                return res.status(200).json({ success: true, message: "Password Reset Successfully" });
+            }
+        }
+    } catch (err) {
+        return res.status(500).json({ success: false, message: "Internal Server Error" });
+    }
+};
+
+
 // set admin password VIEW
 exports.setAdminPasswordView = (req, res) => {
     // console.log(req.params);
@@ -282,6 +388,23 @@ exports.setAdminPasswordView = (req, res) => {
     }
     res.render("createpassword", {
         title: "createpassword",
+        data: DATA
+    })
+};
+
+
+// set admin password VIEW
+exports.resetAdminPasswordView = (req, res) => {
+    // console.log(req.params);
+    const DATA = {
+        email: req.params.email,
+        token: req.params.token,
+        user_type: req.params.user_type,
+        backend_url: process.env.HOST,
+        frontend_url: process.env.REACT_HOST,
+    }
+    res.render("resetnewpassword", {
+        title: "reset-new-password",
         data: DATA
     })
 };

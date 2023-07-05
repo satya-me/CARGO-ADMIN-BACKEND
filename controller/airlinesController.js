@@ -284,6 +284,112 @@ exports.deleteAirline = async (req, res) => {
 }
 
 
+// forget password
+exports.forgotAirlinePassword = async (req, res) => {
+    // console.log(req.body);
+    // return;
+    const { email } = req.body;
+    try {
+        if (!(email)) {
+            return res.status(400).json({ success: false, message: "All Fields Are Required.Please try again" });
+        }
+        const airline = await AirlineModel.findOne({ email });
+
+        // console.log(airline);
+        // return;
+
+        if (!airline) {
+            return res.status(400).json({ success: false, message: "This Email Is Not Registered With Us" });
+        } else {
+            const token = new TokenModel({
+                _userId: airline._id,
+                token: crypto.randomBytes(16).toString("hex"),
+            });
+
+            await token.save();
+
+            var transporter = nodemailer.createTransport({
+                host: "smtp.gmail.com",
+                port: 587,
+                secure: false,
+                requireTLS: true,
+                auth: {
+                    user: process.env.EMAIL_ID,
+                    pass: process.env.APP_PASSWORD
+                },
+            });
+
+            var mailOptions = {
+                from: "no-reply@surajit.com",
+                to: airline.email,
+                subject: "Forgot Password Link",
+                text:
+                    "Hello " +
+                    airline.person_name +
+                    ",\n\n" +
+                    "Please reset your password by clicking the link: \nhttp:\/\/" +
+                    req.headers.host +
+                    "\/api\/system\/airline\/forgot\/password\/" +
+                    email +
+                    "\/" +
+                    token.token +
+                    // "\/" + airline.AIRLINE_type +
+                    "\/" + "airline" +
+                    "\n\nThank You!!\n",
+            };
+            transporter.sendMail(mailOptions, function (err) {
+                if (err) {
+                    console.log("Technical Issues...");
+                    return res.status(400).json({ success: false, message: "Technical Issues" });
+                } else {
+                    console.log("Mail Sent.....");
+                    return res.status(200).json({
+                        success: true,
+                        message:
+                            "An Email Sent To Your Email ID For Set Your Password. It Will Expire Within 24 Hours.",
+                    });
+                }
+            });
+        }
+    } catch (exc) {
+        console.log("Error:", exc);
+        return res.status(404).json({ success: false, message: exc });
+    }
+}
+
+
+// set AIRLINE password
+exports.resetAirlinePassword = async (req, res) => {
+    // console.log(req.params);
+    // return;
+    const { email, token } = req.params;
+    const setPassword = await SecurePassword(req.body.password);
+    try {
+        const airlineToken = await TokenModel.findOne({ token: token });
+
+        if (!airlineToken) {
+            // console.log("Verification Link May Be Expired :(");
+            return res.status(400).json({ success: false, message: "Verification Link May Be Expired :(" });
+        } else {
+            const AIRLINE = await AirlineModel.findOne({ _id: airlineToken._userId, email });
+
+            if (!AIRLINE) {
+                // console.log("User Not found");
+                return res.status(404).json({ success: false, message: "User Not found" });
+            } else {
+                AIRLINE.password = setPassword; // Update the password field in the AIRLINE object
+                await AIRLINE.save();
+                await CreateToken(AIRLINE);
+                // console.log("Password Set Successfully");
+                return res.status(200).json({ success: true, message: "Password Reset Successfully" });
+            }
+        }
+    } catch (err) {
+        return res.status(500).json({ success: false, message: "Internal Server Error" });
+    }
+};
+
+
 // set airline password VIEW
 exports.setAirlinePasswordView = (req, res) => {
     // console.log(req.params);
@@ -296,6 +402,23 @@ exports.setAirlinePasswordView = (req, res) => {
     }
     res.render("createpassword", {
         title: "createpassword",
+        data: DATA
+    })
+};
+
+
+// set airline password VIEW
+exports.resetAirlinePasswordView = (req, res) => {
+    // console.log(req.params);
+    const DATA = {
+        email: req.params.email,
+        token: req.params.token,
+        user_type: req.params.user_type,
+        backend_url: process.env.HOST,
+        frontend_url: process.env.REACT_HOST,
+    }
+    res.render("resetnewpassword", {
+        title: "reset-new-password",
         data: DATA
     })
 };
