@@ -237,27 +237,27 @@ exports.getAllVendors = async (req, res) => {
 // update vendor
 exports.updateVendor = async (req, res) => {
     // console.log(req.body);
-    console.log(req.params);
+    // console.log(req.params.id);
     // return;
     const { vendor_name, reporting_person_name, reporting_person_email, reporting_person_phone, reporting_person_alt_phone, HO_address, status, _airlineId } = req.body;
     const img = req.file ? '/public/uploads/' + req.file.filename : "";
     try {
         // Check for duplicate email or phone number
-        const duplicateData = await VendorModel.findOne({
-            $or: [
-                { reporting_person_email: reporting_person_email },
-                { reporting_person_phone: reporting_person_phone },
-                { reporting_person_alt_phone: reporting_person_alt_phone }
-            ],
-            _id: { $ne: req.params.id } // Exclude the current document being updated
-        });
+        // const duplicateData = await VendorModel.findOne({
+        //     $or: [
+        //         { reporting_person_email: reporting_person_email },
+        //         { reporting_person_phone: reporting_person_phone },
+        //         { reporting_person_alt_phone: reporting_person_alt_phone }
+        //     ],
+        //     _id: { $ne: req.params.id } // Exclude the current document being updated
+        // });
 
         // console.log(duplicateData);
         // return;
 
-        if (duplicateData) {
-            return res.status(400).json({ success: false, message: "Duplicate Email or Phone Number" });
-        }
+        // if (duplicateData) {
+        //     return res.status(400).json({ success: false, message: "Duplicate Email or Phone Number" });
+        // }
 
         const updateVendor = await VendorModel.findByIdAndUpdate(
             req.params.id,
