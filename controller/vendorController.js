@@ -159,7 +159,7 @@ exports.loginVendor = async (req, res) => {
             if (!email && password) {
                 return res.status(400).json({ success: false, message: "All Fields Are Required" });
             } else {
-                const existingVendor = await VendorModel.findOne({ reporting_person_email: email });
+                const existingVendor = await VendorModel.findOne({ reporting_person_email: email, _airlineId: airlineID });
                 // console.log(existingVendor);
                 // return;
                 if (!existingVendor) {
