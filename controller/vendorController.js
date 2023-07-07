@@ -452,3 +452,11 @@ exports.resetVendorPasswordView = (req, res) => {
         data: DATA
     })
 };
+
+
+// take booking
+exports.takeBooking = async (req, res) => {
+    console.log(req.body);
+    console.log(req.headers.authorization);
+    return;
+}

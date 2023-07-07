@@ -15,6 +15,8 @@ router.post('/vendor/delete/:id', [Authentication.verifyToken], vendorController
 router.post('/vendor/setpassword/:email/:token/:user_type', ImageUpload.single("vendor_logo"), vendorController.setVendorPassword);
 router.post('/vendor/forgot/password', vendorController.forgotVendorPassword);
 router.post('/vendor/forgot/password/:email/:token/:user_type/:airline_name', vendorController.resetVendorPassword);
+router.post('/vendor/take/booking', [Authentication.verifyToken], vendorController.takeBooking);
+
 
 
 // ************* GET ROUTES ************* //
