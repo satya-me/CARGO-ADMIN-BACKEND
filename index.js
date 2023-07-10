@@ -44,6 +44,10 @@ app.use('/api/system', airlineRoute);
 const vendorRoute = require('./routes/vendorRoute');
 app.use('/api', vendorRoute);
 
+// bookingRoute
+const bookingRoute = require('./routes/bookingRoute');
+app.use('/api', bookingRoute);
+
 
 // dotenv config
 require('dotenv').config();
