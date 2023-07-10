@@ -15,7 +15,7 @@ router.post('/vendor/delete/:id', [Authentication.verifyToken], vendorController
 router.post('/vendor/setpassword/:email/:token/:user_type', ImageUpload.single("vendor_logo"), vendorController.setVendorPassword);
 router.post('/vendor/forgot/password', vendorController.forgotVendorPassword);
 router.post('/vendor/forgot/password/:email/:token/:user_type/:airline_name', vendorController.resetVendorPassword);
-router.post('/vendor/take/booking', [Authentication.verifyToken], vendorController.takeBooking);
+router.post('/vendor/take/booking', [Authentication.verifyToken], vendorController.createBooking);
 
 
 
@@ -23,6 +23,7 @@ router.post('/vendor/take/booking', [Authentication.verifyToken], vendorControll
 router.get('/all/vendor', vendorController.getAllVendors);
 router.get('/vendor/setpassword/:email/:token/:user_type', vendorController.setVendorPasswordView);
 router.get('/vendor/forgot/password/:email/:token/:user_type/:airline_name', vendorController.resetVendorPasswordView);
+router.get('/all/booking', vendorController.getAllBookingData);
 
 
 module.exports = router;
