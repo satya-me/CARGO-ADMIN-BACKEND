@@ -4,9 +4,9 @@ const BookingModel = require('../model/booking');
 exports.createBooking = async (req, res) => {
     // console.log(req.body);
     // return;
-    const { destination, departure_dest, shipment_date_time, customer_name, customer_phone, customer_email, customer_address, product_details, _userID, totalWeight, dimension, chargeableWeight } = req.body;
+    const { destination, departure_dest, shipment_date_time, customer_name, customer_phone, customer_email, customer_address, product_details, _userID, totalWeight, dimension, chargeableWeight, flight } = req.body;
     try {
-        if (!(destination && departure_dest && shipment_date_time && customer_name && customer_phone && customer_email && customer_address && product_details && _userID && totalWeight && dimension && chargeableWeight)) {
+        if (!(destination && departure_dest && shipment_date_time && customer_name && customer_phone && customer_email && customer_address && product_details && _userID && totalWeight && dimension && chargeableWeight && flight)) {
             return res.status(400).json({ success: false, message: "All Fields Are Required" });
         } else {
             // generateAWBNumber
@@ -31,6 +31,7 @@ exports.createBooking = async (req, res) => {
                 customer_email,
                 customer_address,
                 product_details,
+                flight,
                 booking_status: true,
                 AWB_number: generateAWBNumber(),
                 type: TYPE,

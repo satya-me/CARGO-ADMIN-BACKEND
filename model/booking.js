@@ -48,6 +48,10 @@ const bookingSchema = new Schema({
         type: String,
         required: true
     },
+    flight: {
+        type: String,
+        required: true
+    },
     shipment_date_time: {
         type: String,
         required: true
