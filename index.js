@@ -4,10 +4,14 @@ const cookieParser = require('cookie-parser');
 const bodyParser = require('body-parser');
 const mongoose = require('mongoose');
 const cors = require('cors');
+const { createProxyMiddleware } = require('http-proxy-middleware');
+
+require('dotenv').config();
 
 const app = express();
 
 app.use('/public', express.static("public"));
+// app.use(express.static('public'));
 
 // cookie session
 app.use(session({
@@ -31,6 +35,16 @@ app.set("views", "views");
 // cros
 app.use(cors());
 
+const targetUrl = process.env.HOST;
+
+// Create a proxy for the file server
+const fileProxy = createProxyMiddleware('/public', {
+    target: targetUrl,
+    changeOrigin: true,
+});
+
+// Proxy the request to the file server
+app.use('/public', fileProxy);
 
 // adminRoute
 const adminRoute = require('./routes/adminRoute');

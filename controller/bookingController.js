@@ -1,6 +1,7 @@
 const BookingModel = require('../model/booking');
-
-
+const path = require('path');
+const pdf = require('html-pdf');
+const fs = require('fs-extra')
 
 // take booking
 exports.createBooking = async (req, res) => {
@@ -42,38 +43,77 @@ exports.createBooking = async (req, res) => {
                 dimension: chargeableWeight,
                 _vendorId: _userID
             });
-            // console.log(newBooking);
-            // return;
-
-            // var transporter = nodemailer.createTransport({
-            //     host: "smtp.gmail.com",
-            //     port: 587,
-            //     secure: false,
-            //     requireTLS: true,
-            //     auth: {
-            //         user: process.env.EMAIL_ID,
-            //         pass: process.env.APP_PASSWORD
-            //     },
-            // });
-
-            // var mailOptions = {
-            //     from: "no-reply@surajit.com",
-            //     to: newBooking.customer_email,
-            //     subject: "cargo Booking",
-            //     text:
-            //         "Hello! Your Booking created successfully",
-            // };
-            // transporter.sendMail(mailOptions, function (err) {
-            //     if (err) {
-            //         console.log("Technical Issues...");
-            //         return res.status(400).json({ success: false, message: "Technical Issues" });
-            //     } else {
-            //         console.log("Mail Sent.....");
-            //         return res.status(200).json({ success: true, message: 'Booking created successfully' });
-            //     }
-            // });
             await newBooking.save();
-            return res.status(200).json({ success: true, message: 'Booking created successfully' });
+
+            const tmp_folder = Date.now();
+            var dir = path.join(__dirname, '../', 'public', `Download/${tmp_folder}`);
+
+            if (!fs.existsSync(dir)) {
+                fs.mkdirSync(dir, { recursive: true });
+            }
+            const filePath = path.join(__dirname, '../', 'public', `Download/${tmp_folder}`, `${flight}.html`);
+            var fileContent = `<!DOCTYPE html>
+            <html lang="en">
+            
+            <head>
+                <meta charset="UTF-8">
+                <meta name="viewport" content="width=device-width, initial-scale=1.0">
+                <title>Document</title>
+            </head>
+            
+            <body>
+                <h1>Invoice</h1>
+                <h5>Destination: ${newBooking?.destination} </h5>
+                <h5>Departure Destination: ${newBooking?.departure_dest} </h5>
+                <h5>Shipment Date Time: ${newBooking?.shipment_date_time} </h5>
+                <h5>Customer Name: ${newBooking?.customer_name} </h5>
+                <h5>Customer Phone: ${newBooking?.customer_phone} </h5>
+                <h5>Customer Email: ${newBooking?.customer_email} </h5>
+                <h5>Customer Address: ${newBooking?.customer_address} </h5>
+                <h5>Product Details: ${newBooking?.product_details?.map((item, index) => {
+                return (
+                    `<br><span key= ${index}>
+                    <span>Prduct(${index + 1})==> </span><span>Length: ${item?.Length} ,</span><span>Width: ${item?.width} ,</span><span>Height: ${item?.height} ,</span><span>Weight: ${item?.weight} ,</span><span>Count: ${item?.count === "Total" ? "Total" : "Per Item"} ,</span> <span>Stockable: ${item?.isStockable ? "Yes" : "No"} ,</span><span>Trunable: ${item?.isTrunable ? "Yes" : "No"} ,</span><span>Battery Included: ${item?.isBatteryIncluded ? "Yes" : "No"} ,</span>
+                    </span> <br>`
+                )
+            })}
+                </h5>
+                <h5>Flight: ${newBooking?.flight} </h5>
+                <h5>Booking Status: ${newBooking?.booking_status ? "Success" : "Pending"} </h5>
+                <h5>AWB Number: ${newBooking?.AWB_number} </h5>
+                <h5>Type: ${newBooking?.type} </h5>
+                <h5>Total Weight: ${newBooking?.totalWeight} Kg.</h5>
+                <h5>Chargeable Weight: ${newBooking?.chargeableWeight} Kg.</h5>
+                <h5>Dimension: ${newBooking?.dimension} cm<sup>3</sup> </h5>
+                <h5>Price Paid: 12200/- </h5>
+            </body>
+            
+            </html>`;
+
+            fs.writeFile(filePath, fileContent, (err) => {
+                if (err) throw err;
+                console.log('File has been saved!');
+                const html = fs.readFileSync(filePath, 'utf8');
+
+                const options = {
+                    timeout: 300000,
+                    format: 'A4',
+                    border: {
+                        top: '0.5in',
+                        right: '0.5in',
+                        bottom: '0.5in',
+                        left: '0.5in'
+                    }
+                };
+
+                // pdf create
+                pdf.create(html, options).toFile(path.join(__dirname, '../', 'public', `Download/${tmp_folder}`, `${flight?.replace(/\s/g, "")}.pdf`), function (err, result) {
+                    if (err) return console.log(err);
+                    // console.log({ host: process.env.HOST, result: result, status: true, folder: tmp_folder, file_name: `${flight}.pdf` });
+                    res.status(200).json({ success: true, host: process.env.HOST, result: result, status: true, folder: tmp_folder, file_name: `${flight?.replace(/\s/g, "")}.pdf`, message: 'Booking created successfully' });
+                });
+
+            });
         }
     } catch (error) {
         return res.status(500).json({ error: 'Failed to save booking' });
@@ -162,5 +202,22 @@ exports.deleteBooking = async (req, res) => {
         }
     } catch (exc) {
         return res.status(500).json({ success: false, message: "Internal Server Error" });
+    }
+}
+
+
+// delete file
+exports.fileDelete = async (req, res) => {
+    const { folder } = req.body;
+    const directoryPath = path.join(__dirname, '../', 'public', `Download/${folder}`);
+    // console.log(directoryPath);
+
+    try {
+        await fs.remove(directoryPath);
+        console.log('Directory removed successfully...');
+        res.status(200).json({ message: 'Directory removed successfully.' });
+    } catch (err) {
+        console.error('Error removing directory:', err);
+        res.status(500).json({ error: 'Failed to remove directory.' });
     }
 }

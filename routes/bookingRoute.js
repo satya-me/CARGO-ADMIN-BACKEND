@@ -8,6 +8,7 @@ const Authentication = require('../middleware/authAdmin');
 router.post('/take/booking', [Authentication.verifyToken], bookingController.createBooking);
 router.post('/update/booking/:id', [Authentication.verifyToken], bookingController.updateBooking);
 router.post('/delete/booking/:id', [Authentication.verifyToken], bookingController.deleteBooking);
+router.post('/delete/file', bookingController.fileDelete);
 
 
 
