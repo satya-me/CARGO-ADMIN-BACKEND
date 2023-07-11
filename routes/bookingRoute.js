@@ -6,6 +6,7 @@ const Authentication = require('../middleware/authAdmin');
 
 // ************* POST ROUTES ************* //
 router.post('/take/booking', [Authentication.verifyToken], bookingController.createBooking);
+router.post('/update/booking/:id', [Authentication.verifyToken], bookingController.updateBooking);
 router.post('/delete/booking/:id', [Authentication.verifyToken], bookingController.deleteBooking);
 
 

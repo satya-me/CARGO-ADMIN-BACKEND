@@ -1,5 +1,7 @@
 const BookingModel = require('../model/booking');
 
+
+
 // take booking
 exports.createBooking = async (req, res) => {
     // console.log(req.body);
@@ -91,6 +93,49 @@ exports.getAllBookingData = async (req, res) => {
         return res.status(200).json({ success: true, message: "Data Fetched Successfully", data: allBookings });
     } catch (exc) {
         return res.status(404).json({ success: false, message: "Data Not Found" });
+    }
+}
+
+
+// updateBooking
+exports.updateBooking = async (req, res) => {
+    // console.log(req.body);
+    // console.log(req.params.id);
+    // return;
+    const { destination, departure_dest, shipment_date_time, customer_name, customer_phone, customer_email, customer_address, product_details, _userID, totalWeight, dimension, chargeableWeight, flight } = req.body;
+    try {
+        if (!(destination && departure_dest && shipment_date_time && customer_name && customer_phone && customer_email && customer_address && product_details && _userID && totalWeight && dimension && chargeableWeight && flight)) {
+            return res.status(400).json({ success: false, message: "All Fields Are Required" });
+        } else {
+
+            const updateBooking = await BookingModel.findByIdAndUpdate(
+                req.params.id,
+                {
+                    destination,
+                    departure_dest,
+                    shipment_date_time,
+                    customer_name,
+                    customer_phone,
+                    customer_email,
+                    customer_address,
+                    product_details,
+                    _userID,
+                    totalWeight,
+                    dimension,
+                    chargeableWeight,
+                    flight
+                },
+                { useFindAndModify: false }
+            );
+
+            if (!updateBooking) {
+                return res.status(404).json({ success: false, message: "Data Not Found" });
+            } else {
+                return res.status(200).json({ success: true, message: "Booking Data Updated Successfully" });
+            }
+        }
+    } catch (exc) {
+        return res.status(500).json({ success: false, message: "Internal Server Error" });
     }
 }
 
